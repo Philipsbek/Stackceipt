@@ -67,11 +67,11 @@ export default function LandingPage() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/app/northwind">View the live demo</Link>
+                <Link href="/auth/login">Log in</Link>
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              No credit card. The demo loads a fully worked example organization.
+              No credit card required. Set up your organization in minutes.
             </p>
           </div>
 
