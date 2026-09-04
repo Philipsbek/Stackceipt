@@ -12,22 +12,24 @@ const CONFIG: Record<Status, { label: string; color: string; pulse: boolean }> =
 };
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const PING_INTERVAL_MS = 30_000;
 
 /**
- * Is the Supabase backend reachable? Uses a no-cors fetch so a cross-origin
- * response still resolves (reachable) and only a real network failure rejects —
- * no CORS false negatives, and nothing is read from the response.
+ * Is the Supabase backend reachable? A normal CORS fetch to the public auth
+ * health endpoint (with the anon key, which the endpoint requires) returns a
+ * readable 200 — so we can trust res.ok, and a rejected promise means a real
+ * network failure. Nothing sensitive is sent or read.
  */
 async function pingBackend(signal: AbortSignal): Promise<boolean> {
-  if (!SUPABASE_URL) return true; // Nothing to check against — don't cry wolf.
+  if (!SUPABASE_URL || !SUPABASE_KEY) return true; // Nothing to check against — don't cry wolf.
   try {
-    await fetch(`${SUPABASE_URL}/auth/v1/health`, {
-      mode: "no-cors",
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/health`, {
+      headers: { apikey: SUPABASE_KEY },
       cache: "no-store",
       signal,
     });
-    return true;
+    return res.ok;
   } catch {
     return false;
   }
