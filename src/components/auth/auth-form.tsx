@@ -97,9 +97,9 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
           {mode === "login" ? (
-            <>No account? <Link href="/auth/sign-up" className="font-medium text-foreground hover:underline">Sign up</Link></>
+            <>No account? <Link href={`/auth/sign-up${next ? `?next=${encodeURIComponent(next)}` : ""}`} className="font-medium text-foreground hover:underline">Sign up</Link></>
           ) : mode === "sign-up" ? (
-            <>Already have an account? <Link href="/auth/login" className="font-medium text-foreground hover:underline">Log in</Link></>
+            <>Already have an account? <Link href={`/auth/login${next ? `?next=${encodeURIComponent(next)}` : ""}`} className="font-medium text-foreground hover:underline">Log in</Link></>
           ) : (
             <Link href="/auth/login" className="font-medium text-foreground hover:underline">Back to login</Link>
           )}

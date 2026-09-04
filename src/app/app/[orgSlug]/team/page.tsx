@@ -27,7 +27,7 @@ export default async function TeamPage({ params }: { params: Promise<{ orgSlug: 
       <PageHeader
         title="Team"
         description="Everyone in this organization, their role, and what they can access."
-        actions={canInvite ? <InviteDialog /> : undefined}
+        actions={canInvite ? <InviteDialog orgSlug={org.slug} /> : undefined}
       />
 
       <Card className="hidden overflow-hidden p-0 md:block">

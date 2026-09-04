@@ -84,7 +84,7 @@ private documents require a fresh auth check + short-lived signed URL.
 
 ## Database migrations
 
-- Ordered files in `supabase/migrations/` (`0001_init` → `0004_storage`). Must apply cleanly
+- Ordered files in `supabase/migrations/` (`0001_init` → `0007_invitations`). Must apply cleanly
   to a fresh database. Add a new numbered file per change; do not rewrite applied migrations.
 - Every tenant table carries `organization_id` directly. Add indexes for org filtering + common
   status/date queries. Keep enums in sync with `src/lib/domain/enums.ts`.

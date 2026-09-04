@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { Check, Copy, Link2, UserPlus } from "lucide-react";
+import { Check, Copy, Link2, Loader2, UserPlus } from "lucide-react";
+import { createInvitationAction } from "@/lib/actions/invitations";
+import type { OrganizationRole } from "@/lib/domain/enums";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,18 +18,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export function InviteDialog() {
+export function InviteDialog({ orgSlug }: { orgSlug: string }) {
   const [open, setOpen] = React.useState(false);
   const [email, setEmail] = React.useState("");
   const [role, setRole] = React.useState("MEMBER");
   const [link, setLink] = React.useState<string | null>(null);
   const [copied, setCopied] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  function generate() {
-    // DEMO: a realistic-looking single-use token. With Supabase, the raw token is
-    // returned exactly once; only its hash is stored server-side.
-    const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "").slice(0, 8);
-    setLink(`${window.location.origin}/invite/${token}`);
+  async function generate() {
+    setLoading(true);
+    setError(null);
+    const result = await createInvitationAction(orgSlug, email, role as OrganizationRole);
+    setLoading(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    setLink(`${window.location.origin}${result.link}`);
     setCopied(false);
   }
 
@@ -47,7 +56,7 @@ export function InviteDialog() {
       open={open}
       onOpenChange={(v) => {
         setOpen(v);
-        if (!v) { setLink(null); setEmail(""); setRole("MEMBER"); }
+        if (!v) { setLink(null); setEmail(""); setRole("MEMBER"); setError(null); }
       }}
     >
       <DialogTrigger asChild>
@@ -67,6 +76,8 @@ export function InviteDialog() {
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="teammate@company.com" />
             <p className="mt-1 text-xs text-muted-foreground">The link only works for this email address.</p>
           </div>
+
+          {error ? <p className="rounded-md bg-[color:var(--danger-bg)] px-3 py-2 text-sm text-destructive">{error}</p> : null}
           <div>
             <Label className="mb-1.5">Role</Label>
             <Select value={role} onValueChange={setRole}>
@@ -94,9 +105,10 @@ export function InviteDialog() {
             <Button
               type="button"
               className="w-full"
-              disabled={!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)}
+              disabled={loading || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)}
               onClick={generate}
             >
+              {loading ? <Loader2 className="size-4 animate-spin" /> : null}
               Generate invite link
             </Button>
           )}

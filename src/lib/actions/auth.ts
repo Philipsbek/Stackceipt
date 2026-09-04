@@ -25,6 +25,7 @@ export async function signUpAction(_prev: AuthResult, formData: FormData): Promi
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("fullName") ?? "");
+  const next = safeNext(String(formData.get("next") ?? ""));
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -35,7 +36,7 @@ export async function signUpAction(_prev: AuthResult, formData: FormData): Promi
   if (error) return { error: error.message };
 
   // If email confirmation is disabled, a session exists immediately.
-  if (data.session) redirect("/onboarding");
+  if (data.session) redirect(next);
   return { message: "Check your email to confirm your account, then log in." };
 }
 
