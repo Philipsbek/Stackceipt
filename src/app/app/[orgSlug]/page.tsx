@@ -6,6 +6,7 @@ import { getDashboardData } from "@/lib/data/dashboard";
 import { can } from "@/lib/domain/permissions";
 import { formatDate, todayInTimezone, urgencyBucket } from "@/lib/domain/dates";
 import { cadenceSuffix } from "@/lib/domain/enums";
+import { buildCategoryColorMap, categoryColor } from "@/lib/domain/category-colors";
 import { PageHeader } from "@/components/stackceipt/page-header";
 import { MetricCard } from "@/components/stackceipt/metric-card";
 import { Money } from "@/components/stackceipt/money";
@@ -26,6 +27,9 @@ export default async function DashboardPage({
   const base = `/app/${org.slug}`;
   const data = await getDashboardData(org, members);
   const today = todayInTimezone(org.timezone);
+  // Shared category -> color map (assigned by spend, largest first) so a color
+  // means the same category in both the category and department charts.
+  const categoryColors = buildCategoryColorMap(data.byCategory.map((c) => c.name));
 
   const firstName = currentMember.fullName.split(" ")[0];
 
@@ -128,13 +132,13 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
 
-        {/* Cost by department */}
+        {/* Cost by department — stacked by category */}
         <Card>
           <CardHeader>
             <CardTitle>Annual cost by department</CardTitle>
           </CardHeader>
           <CardContent>
-            <Breakdown items={data.byDepartment} currency={data.currency} />
+            <DepartmentBreakdown items={data.byDepartment} currency={data.currency} colors={categoryColors} />
           </CardContent>
         </Card>
       </div>
@@ -144,38 +148,112 @@ export default async function DashboardPage({
           <CardTitle>Annual cost by category</CardTitle>
         </CardHeader>
         <CardContent>
-          <Breakdown items={data.byCategory} currency={data.currency} columns />
+          <CategoryBreakdown items={data.byCategory} currency={data.currency} colors={categoryColors} />
         </CardContent>
       </Card>
     </div>
   );
 }
 
-function Breakdown({
+// Muted "share of total" label so each row reads as a fraction of all spend.
+function sharePct(value: number, total: number): string {
+  if (total <= 0 || value <= 0) return "0%";
+  const pct = (value / total) * 100;
+  if (pct < 1) return "<1%";
+  return `${Math.round(pct)}%`;
+}
+
+// Bar width relative to the largest row, with a small floor so non-zero items
+// stay visible instead of collapsing to an invisible sliver.
+function barWidth(value: number, max: number): number {
+  if (value <= 0) return 0;
+  return Math.max((value / max) * 100, 3);
+}
+
+function CategoryBreakdown({
   items,
   currency,
-  columns,
+  colors,
 }: {
   items: { name: string; annualizedMinor: number }[];
   currency: string;
-  columns?: boolean;
+  colors: Map<string, string>;
 }) {
   const max = Math.max(1, ...items.map((i) => i.annualizedMinor));
+  const total = items.reduce((sum, i) => sum + i.annualizedMinor, 0);
   if (items.length === 0) {
     return <p className="text-sm text-muted-foreground">No data yet.</p>;
   }
   return (
-    <div className={columns ? "grid gap-x-8 gap-y-3 sm:grid-cols-2" : "space-y-3"}>
+    <div className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+      {items.map((i) => {
+        const color = categoryColor(colors, i.name);
+        return (
+          <div key={i.name} className="space-y-1.5">
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+                <span className="truncate">{i.name}</span>
+              </span>
+              <span className="flex shrink-0 items-baseline gap-2 tabular-nums">
+                <span className="text-xs text-muted-foreground">{sharePct(i.annualizedMinor, total)}</span>
+                <span className="font-medium">
+                  <Money minor={i.annualizedMinor} currency={currency} showCents={false} />
+                </span>
+              </span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-[#ececec]">
+              <div className="h-full rounded-full" style={{ width: `${barWidth(i.annualizedMinor, max)}%`, backgroundColor: color }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function DepartmentBreakdown({
+  items,
+  currency,
+  colors,
+}: {
+  items: { name: string; annualizedMinor: number; segments: { category: string; annualizedMinor: number }[] }[];
+  currency: string;
+  colors: Map<string, string>;
+}) {
+  const max = Math.max(1, ...items.map((i) => i.annualizedMinor));
+  const total = items.reduce((sum, i) => sum + i.annualizedMinor, 0);
+  if (items.length === 0) {
+    return <p className="text-sm text-muted-foreground">No data yet.</p>;
+  }
+  return (
+    <div className="space-y-3">
       {items.map((i) => (
         <div key={i.name} className="space-y-1.5">
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between gap-3 text-sm">
             <span className="truncate">{i.name}</span>
-            <span className="font-medium tabular-nums">
-              <Money minor={i.annualizedMinor} currency={currency} showCents={false} />
+            <span className="flex shrink-0 items-baseline gap-2 tabular-nums">
+              <span className="text-xs text-muted-foreground">{sharePct(i.annualizedMinor, total)}</span>
+              <span className="font-medium">
+                <Money minor={i.annualizedMinor} currency={currency} showCents={false} />
+              </span>
             </span>
           </div>
+          {/* Bar width is the department's share of the largest department;
+              segments within show the category composition. */}
           <div className="h-1.5 overflow-hidden rounded-full bg-[#ececec]">
-            <div className="h-full rounded-full bg-[#171717]" style={{ width: `${(i.annualizedMinor / max) * 100}%` }} />
+            <div className="flex h-full" style={{ width: `${barWidth(i.annualizedMinor, max)}%` }}>
+              {i.segments.map((seg) => (
+                <div
+                  key={seg.category}
+                  title={`${seg.category}`}
+                  style={{
+                    width: `${(seg.annualizedMinor / i.annualizedMinor) * 100}%`,
+                    backgroundColor: categoryColor(colors, seg.category),
+                  }}
+                />
+              ))}
+            </div>
           </div>
         </div>
       ))}

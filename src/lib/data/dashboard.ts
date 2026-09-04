@@ -14,7 +14,11 @@ export interface DashboardData {
   reviewsDue: number;
   openFindings: number;
   openOffboardingTasks: number;
-  byDepartment: { name: string; annualizedMinor: number }[];
+  byDepartment: {
+    name: string;
+    annualizedMinor: number;
+    segments: { category: string; annualizedMinor: number }[];
+  }[];
   byCategory: { name: string; annualizedMinor: number }[];
   currency: string;
   renewalWindowDays: number;
@@ -42,12 +46,16 @@ export async function getDashboardData(org: Organization, members: Member[]): Pr
     .sort((a, b) => (a.nextRenewalDate ?? "").localeCompare(b.nextRenewalDate ?? ""));
 
   const deptMap = new Map<string, number>();
+  const deptCatMap = new Map<string, Map<string, number>>();
   const catMap = new Map<string, number>();
   for (const s of recurring) {
     const dept = s.departmentName ?? "Unassigned";
-    deptMap.set(dept, (deptMap.get(dept) ?? 0) + s.annualizedMinor);
     const cat = s.category ?? "Uncategorized";
+    deptMap.set(dept, (deptMap.get(dept) ?? 0) + s.annualizedMinor);
     catMap.set(cat, (catMap.get(cat) ?? 0) + s.annualizedMinor);
+    const inner = deptCatMap.get(dept) ?? new Map<string, number>();
+    inner.set(cat, (inner.get(cat) ?? 0) + s.annualizedMinor);
+    deptCatMap.set(dept, inner);
   }
 
   return {
@@ -59,7 +67,15 @@ export async function getDashboardData(org: Organization, members: Member[]): Pr
     reviewsDue: reviewsQ.count ?? 0,
     openFindings: findings.filter((f) => f.status === "OPEN").length,
     openOffboardingTasks: tasksQ.count ?? 0,
-    byDepartment: [...deptMap.entries()].map(([name, annualizedMinor]) => ({ name, annualizedMinor })).sort((a, b) => b.annualizedMinor - a.annualizedMinor),
+    byDepartment: [...deptMap.entries()]
+      .map(([name, annualizedMinor]) => ({
+        name,
+        annualizedMinor,
+        segments: [...(deptCatMap.get(name)?.entries() ?? [])]
+          .map(([category, minor]) => ({ category, annualizedMinor: minor }))
+          .sort((a, b) => b.annualizedMinor - a.annualizedMinor),
+      }))
+      .sort((a, b) => b.annualizedMinor - a.annualizedMinor),
     byCategory: [...catMap.entries()].map(([name, annualizedMinor]) => ({ name, annualizedMinor })).sort((a, b) => b.annualizedMinor - a.annualizedMinor),
     currency: org.baseCurrency,
     renewalWindowDays: org.renewalWindowDays,
