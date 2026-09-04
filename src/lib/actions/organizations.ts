@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { isDemoEmail } from "@/lib/data/access";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -27,6 +28,9 @@ export async function createOrganizationAction(input: {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return { error: "You must be logged in." };
+  if (isDemoEmail(userData.user.email)) {
+    return { error: "The demo account can't create organizations. Sign up for your own." };
+  }
 
   const { error } = await supabase.rpc("create_organization", {
     p_name: parsed.data.name,

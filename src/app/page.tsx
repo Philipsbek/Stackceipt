@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Money } from "@/components/stackceipt/money";
 import { SubscriptionStatusBadge } from "@/components/stackceipt/status-badge";
 import { Wordmark } from "@/components/brand/wordmark";
+import { startDemoAction } from "@/lib/actions/auth";
 
 const features = [
   { icon: LayoutGrid, title: "Subscription inventory", body: "One governed source of truth for every tool, its owner, seats, and true annualized cost." },
@@ -66,9 +67,11 @@ export default function LandingPage() {
                   Start tracking your stack <ArrowRight className="size-4" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link href="/auth/login">Log in</Link>
-              </Button>
+              <form action={startDemoAction}>
+                <Button type="submit" size="lg" variant="outline">
+                  View the live demo
+                </Button>
+              </form>
             </div>
             <p className="text-xs text-muted-foreground">
               No credit card required. Set up your organization in minutes.

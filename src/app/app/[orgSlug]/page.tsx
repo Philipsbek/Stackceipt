@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Plus } from "lucide-react";
 import { getOrgContext } from "@/lib/data/access";
 import { getDashboardData } from "@/lib/data/dashboard";
+import { can } from "@/lib/domain/permissions";
 import { formatDate, todayInTimezone, urgencyBucket } from "@/lib/domain/dates";
 import { cadenceSuffix } from "@/lib/domain/enums";
 import { PageHeader } from "@/components/stackceipt/page-header";
@@ -21,7 +22,7 @@ export default async function DashboardPage({
   const { orgSlug } = await params;
   const ctx = await getOrgContext(orgSlug);
   if (!ctx) notFound();
-  const { org, currentMember, members } = ctx;
+  const { org, currentMember, members, actor } = ctx;
   const base = `/app/${org.slug}`;
   const data = await getDashboardData(org, members);
   const today = todayInTimezone(org.timezone);
@@ -34,11 +35,13 @@ export default async function DashboardPage({
         title={`Welcome back, ${firstName}`}
         description="Your organization's software spend and everything that needs a decision, at a glance."
         actions={
-          <Button asChild>
-            <Link href={`${base}/subscriptions/new`}>
-              <Plus className="size-4" /> Add subscription
-            </Link>
-          </Button>
+          can(actor, "subscription.create") ? (
+            <Button asChild>
+              <Link href={`${base}/subscriptions/new`}>
+                <Plus className="size-4" /> Add subscription
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
 

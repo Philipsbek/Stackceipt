@@ -39,6 +39,18 @@ export async function signUpAction(_prev: AuthResult, formData: FormData): Promi
   return { message: "Check your email to confirm your account, then log in." };
 }
 
+export async function startDemoAction(): Promise<void> {
+  const email = process.env.DEMO_EMAIL;
+  const password = process.env.DEMO_PASSWORD;
+  if (email && password) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error) redirect("/app");
+  }
+  // Demo not configured or sign-in failed — fall back to sign-up.
+  redirect("/auth/sign-up");
+}
+
 export async function signOutAction(): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();

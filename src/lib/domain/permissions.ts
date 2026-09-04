@@ -59,7 +59,25 @@ export interface ActorContext {
   status: MembershipStatus;
   /** Department ids this member is the designated manager of. */
   managedDepartmentIds: readonly string[];
+  /** True for the public demo guest — read everything, write nothing. */
+  isReadOnly?: boolean;
 }
+
+/** Permissions that are pure reads/exports (allowed even in read-only demo mode). */
+export const READ_ONLY_PERMISSIONS: ReadonlySet<PermissionKey> = new Set([
+  "organization.read",
+  "member.read",
+  "department.read",
+  "subscription.read",
+  "document.read",
+  "request.read",
+  "review.read",
+  "offboarding.read",
+  "janitor.read",
+  "report.read",
+  "report.export",
+  "audit.read",
+]);
 
 export interface ResourceScope {
   /** Department the resource belongs to (subscription, request, offboarding task). */
@@ -89,6 +107,9 @@ export function can(
 ): boolean {
   // Only active members have any access at all.
   if (!isActive(actor)) return false;
+
+  // Read-only demo guest: allow reads/exports, deny every mutation.
+  if (actor.isReadOnly && !READ_ONLY_PERMISSIONS.has(permission)) return false;
 
   const { role } = actor;
   const isOwner = role === "OWNER";

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requestInputSchema, toMinor, type RequestInput } from "@/lib/domain/validation";
-import { appendAudit, approverMemberIds, notify, resolveActor } from "./_shared";
+import { appendAudit, approverMemberIds, DEMO_READONLY_ERROR, notify, resolveActor } from "./_shared";
 
 export type ActionResult = { error?: string; ok?: boolean; id?: string };
 
@@ -27,6 +27,7 @@ export async function createRequestAction(
 
   const actor = await resolveActor(orgSlug);
   if (!actor) return { error: "Not authorized" };
+  if (actor.isReadOnly) return { error: DEMO_READONLY_ERROR };
   const { supabase, orgId, memberId, baseCurrency } = actor;
 
   const status = asDraft ? "DRAFT" : "SUBMITTED";
@@ -84,6 +85,7 @@ export async function decideRequestAction(
 ): Promise<ActionResult> {
   const actor = await resolveActor(orgSlug);
   if (!actor) return { error: "Not authorized" };
+  if (actor.isReadOnly) return { error: DEMO_READONLY_ERROR };
   const { supabase, orgId, memberId } = actor;
 
   if (decision === "DENIED" && note.trim().length < 3) {
@@ -137,6 +139,7 @@ export async function decideRequestAction(
 export async function cancelRequestAction(orgSlug: string, requestId: string): Promise<ActionResult> {
   const actor = await resolveActor(orgSlug);
   if (!actor) return { error: "Not authorized" };
+  if (actor.isReadOnly) return { error: DEMO_READONLY_ERROR };
   const { supabase, orgId } = actor;
 
   const { data: updated, error } = await supabase
@@ -159,6 +162,7 @@ export async function cancelRequestAction(orgSlug: string, requestId: string): P
 export async function convertRequestAction(orgSlug: string, requestId: string): Promise<ActionResult> {
   const actor = await resolveActor(orgSlug);
   if (!actor) return { error: "Not authorized" };
+  if (actor.isReadOnly) return { error: DEMO_READONLY_ERROR };
   const { supabase, orgId, memberId } = actor;
 
   const { data: req } = await supabase

@@ -19,7 +19,7 @@ export default async function AppLayout({
   // Non-member or non-existent org are indistinguishable — always 404.
   if (!ctx) notFound();
 
-  const { org, currentMember, actor } = ctx;
+  const { org, currentMember, actor, isReadOnly } = ctx;
 
   const navItems = NAV_ITEMS.filter(
     (item) => !item.permission || can(actor, item.permission),
@@ -35,6 +35,7 @@ export default async function AppLayout({
       user={{ name: currentMember.fullName, email: currentMember.email, role: ROLE_LABELS[currentMember.role] }}
       navItems={navItems}
       unreadCount={unread}
+      isReadOnly={isReadOnly}
     >
       {children}
     </AppShell>

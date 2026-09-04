@@ -2,11 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { isDemoEmail } from "@/lib/data/access";
+import { DEMO_READONLY_ERROR } from "./_shared";
 import { subscriptionInputSchema, toMinor, type SubscriptionInput } from "@/lib/domain/validation";
 
 export type ActionResult = { error?: string; ok?: boolean; id?: string };
 
-async function currentMemberId(orgSlug: string): Promise<{ orgId: string; memberId: string } | null> {
+async function currentMemberId(orgSlug: string): Promise<{ orgId: string; memberId: string; isReadOnly: boolean } | null> {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return null;
@@ -20,7 +22,7 @@ async function currentMemberId(orgSlug: string): Promise<{ orgId: string; member
     .eq("status", "ACTIVE")
     .maybeSingle();
   if (!member) return null;
-  return { orgId: org.id as string, memberId: member.id as string };
+  return { orgId: org.id as string, memberId: member.id as string, isReadOnly: isDemoEmail(userData.user.email) };
 }
 
 function toRow(input: SubscriptionInput) {
@@ -55,6 +57,7 @@ export async function createSubscriptionAction(orgSlug: string, input: Subscript
 
   const ctx = await currentMemberId(orgSlug);
   if (!ctx) return { error: "Not authorized" };
+  if (ctx.isReadOnly) return { error: DEMO_READONLY_ERROR };
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -77,6 +80,7 @@ export async function updateSubscriptionAction(orgSlug: string, id: string, inpu
 
   const ctx = await currentMemberId(orgSlug);
   if (!ctx) return { error: "Not authorized" };
+  if (ctx.isReadOnly) return { error: DEMO_READONLY_ERROR };
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -97,6 +101,7 @@ export async function updateSubscriptionAction(orgSlug: string, id: string, inpu
 export async function archiveSubscriptionAction(orgSlug: string, id: string): Promise<ActionResult> {
   const ctx = await currentMemberId(orgSlug);
   if (!ctx) return { error: "Not authorized" };
+  if (ctx.isReadOnly) return { error: DEMO_READONLY_ERROR };
   const supabase = await createClient();
   const { error } = await supabase
     .from("subscriptions")

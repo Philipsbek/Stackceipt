@@ -66,10 +66,11 @@ interface AppShellProps {
   user: ShellUser;
   navItems: NavItem[];
   unreadCount: number;
+  isReadOnly?: boolean;
   children: React.ReactNode;
 }
 
-export function AppShell({ org, orgs, user, navItems, unreadCount, children }: AppShellProps) {
+export function AppShell({ org, orgs, user, navItems, unreadCount, isReadOnly, children }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   return (
@@ -80,6 +81,14 @@ export function AppShell({ org, orgs, user, navItems, unreadCount, children }: A
       </aside>
 
       <div className="lg:pl-60">
+        {isReadOnly ? (
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-b border-[color:var(--warning-border)] bg-[color:var(--warning-bg)] px-4 py-1.5 text-center text-xs text-[color:var(--warning)]">
+            <span className="font-medium">You&apos;re exploring a read-only demo.</span>
+            <Link href="/auth/sign-up" className="font-semibold underline underline-offset-2 hover:opacity-80">
+              Create your own free workspace →
+            </Link>
+          </div>
+        ) : null}
         {/* Top bar */}
         <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur sm:px-6">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>

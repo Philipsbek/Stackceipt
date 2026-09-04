@@ -39,9 +39,11 @@ export default async function RequestsPage({
         title="Requests"
         description="Ask for new software and track approvals with a clear audit trail."
         actions={
-          <Button asChild>
-            <Link href={`${base}/requests/new`}><Plus className="size-4" /> New request</Link>
-          </Button>
+          can(actor, "request.create") ? (
+            <Button asChild>
+              <Link href={`${base}/requests/new`}><Plus className="size-4" /> New request</Link>
+            </Button>
+          ) : undefined
         }
       />
 

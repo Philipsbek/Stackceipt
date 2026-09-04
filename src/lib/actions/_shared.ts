@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isDemoEmail } from "@/lib/data/access";
 import type { NotificationType, OrganizationRole } from "@/lib/domain/enums";
 
 type Supa = Awaited<ReturnType<typeof createClient>>;
@@ -9,7 +10,11 @@ export interface ActorCtx {
   baseCurrency: string;
   memberId: string;
   role: OrganizationRole;
+  isReadOnly: boolean;
 }
+
+/** Standard rejection for a write attempted by the read-only demo guest. */
+export const DEMO_READONLY_ERROR = "This is a read-only demo. Sign up to get your own workspace and make changes.";
 
 /** Resolve the current authenticated user's active membership in an org (by slug). */
 export async function resolveActor(orgSlug: string): Promise<ActorCtx | null> {
@@ -39,6 +44,7 @@ export async function resolveActor(orgSlug: string): Promise<ActorCtx | null> {
     baseCurrency: org.base_currency as string,
     memberId: member.id as string,
     role: member.role as OrganizationRole,
+    isReadOnly: isDemoEmail(userData.user.email),
   };
 }
 

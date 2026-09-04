@@ -19,6 +19,14 @@ export interface OrgContext {
   currentMember: Member;
   members: Member[];
   actor: ActorContext;
+  /** True when the viewer is the public read-only demo guest. */
+  isReadOnly: boolean;
+}
+
+/** Is this email the configured demo guest account? */
+export function isDemoEmail(email: string | null | undefined): boolean {
+  const demo = process.env.DEMO_EMAIL;
+  return Boolean(demo && email && email.toLowerCase() === demo.toLowerCase());
 }
 
 type MemberRowRaw = {
@@ -115,14 +123,16 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext | nu
     .filter((d) => d.manager_member_id === currentMember.id)
     .map((d) => d.id);
 
+  const isReadOnly = isDemoEmail(session.email);
   const actor: ActorContext = {
     memberId: currentMember.id,
     role: currentMember.role,
     status: currentMember.status,
     managedDepartmentIds,
+    isReadOnly,
   };
 
-  return { org: mapOrg(orgRow), currentMember, members, actor };
+  return { org: mapOrg(orgRow), currentMember, members, actor, isReadOnly };
 });
 
 export const getMyOrganizations = cache(async (): Promise<Organization[]> => {
