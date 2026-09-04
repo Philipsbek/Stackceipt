@@ -41,6 +41,12 @@ export default async function DashboardPage({
                 <Plus className="size-4" /> Add subscription
               </Link>
             </Button>
+          ) : actor.isReadOnly ? (
+            <span title="Adding subscriptions is disabled in the read-only demo">
+              <Button disabled aria-disabled>
+                <Plus className="size-4" /> Add subscription
+              </Button>
+            </span>
           ) : undefined
         }
       />
