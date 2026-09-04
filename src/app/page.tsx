@@ -23,7 +23,6 @@ import { SubscriptionStatusBadge } from "@/components/stackceipt/status-badge";
 import { Wordmark } from "@/components/brand/wordmark";
 import { DemoCtaButton } from "@/components/landing/demo-cta-button";
 import { MotionReveal } from "@/components/landing/motion-reveal";
-import { FloatingFaq } from "@/components/landing/floating-faq";
 import { LandingScrollEffects } from "@/components/landing/scroll-effects";
 import { ContextVault } from "@/components/landing/context-vault";
 import { startDemoAction } from "@/lib/actions/auth";
@@ -315,8 +314,6 @@ export default function LandingPage() {
           <p className="text-xs">© {new Date().getFullYear()} Stackceipt. Demo build.</p>
         </div>
       </footer>
-
-      <FloatingFaq />
     </div>
   );
 }
