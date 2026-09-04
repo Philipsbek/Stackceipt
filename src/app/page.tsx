@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Money } from "@/components/stackceipt/money";
 import { SubscriptionStatusBadge } from "@/components/stackceipt/status-badge";
 import { Wordmark } from "@/components/brand/wordmark";
+import { DemoCtaButton } from "@/components/landing/demo-cta-button";
 import { startDemoAction } from "@/lib/actions/auth";
 
 const features = [
@@ -68,9 +69,7 @@ export default function LandingPage() {
                 </Link>
               </Button>
               <form action={startDemoAction}>
-                <Button type="submit" size="lg" variant="outline">
-                  View the live demo
-                </Button>
+                <DemoCtaButton />
               </form>
             </div>
             <p className="text-xs text-muted-foreground">
