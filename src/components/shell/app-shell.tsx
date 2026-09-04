@@ -28,7 +28,7 @@ import { signOutAction } from "@/lib/actions/auth";
 import { Wordmark } from "@/components/brand/wordmark";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { ConnectionStatus } from "@/components/shell/connection-status";
 import {
   Sheet,
   SheetContent,
@@ -247,10 +247,7 @@ function SidebarContent({
       </nav>
 
       <div className="border-t border-sidebar-border p-3">
-        <Badge variant="soft" className="gap-1.5">
-          <span className="size-1.5 rounded-full bg-[color:var(--success)]" />
-          Connected
-        </Badge>
+        <ConnectionStatus />
       </div>
     </div>
   );
