@@ -97,6 +97,7 @@ export const NOTIFICATION_TYPES = [
   "OFFBOARDING_COMPLETED",
   "JANITOR_FINDING",
   "MEMBERSHIP_CHANGED",
+  "ANNOUNCEMENT",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getMyOrganizations, getOrgContext } from "@/lib/data/access";
-import { unreadCount } from "@/lib/data/collections";
+import { listNotifications, unreadCount } from "@/lib/data/collections";
 import { can } from "@/lib/domain/permissions";
 import { NAV_ITEMS } from "@/lib/nav";
 import { AppShell } from "@/components/shell/app-shell";
@@ -26,7 +26,11 @@ export default async function AppLayout({
   );
 
   const orgs = (await getMyOrganizations()).map((o) => ({ slug: o.slug, name: o.name }));
-  const unread = await unreadCount(org.id, currentMember.id);
+  const [unread, allNotifications] = await Promise.all([
+    unreadCount(org.id, currentMember.id),
+    listNotifications(org.id, currentMember.id),
+  ]);
+  const recentNotifications = allNotifications.slice(0, 8);
 
   return (
     <AppShell
@@ -35,6 +39,8 @@ export default async function AppLayout({
       user={{ name: currentMember.fullName, email: currentMember.email, role: ROLE_LABELS[currentMember.role] }}
       navItems={navItems}
       unreadCount={unread}
+      notifications={recentNotifications}
+      timezone={org.timezone}
       isReadOnly={isReadOnly}
     >
       {children}

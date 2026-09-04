@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
-  BellRing,
   Boxes,
   Building2,
   CalendarClock,
@@ -29,6 +28,8 @@ import { Wordmark } from "@/components/brand/wordmark";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ConnectionStatus } from "@/components/shell/connection-status";
+import { NotificationBell } from "@/components/shell/notification-bell";
+import type { Notification } from "@/lib/domain/types";
 import {
   Sheet,
   SheetContent,
@@ -66,11 +67,13 @@ interface AppShellProps {
   user: ShellUser;
   navItems: NavItem[];
   unreadCount: number;
+  notifications: Notification[];
+  timezone: string;
   isReadOnly?: boolean;
   children: React.ReactNode;
 }
 
-export function AppShell({ org, orgs, user, navItems, unreadCount, isReadOnly, children }: AppShellProps) {
+export function AppShell({ org, orgs, user, navItems, unreadCount, notifications, timezone, isReadOnly, children }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   return (
@@ -105,18 +108,13 @@ export function AppShell({ org, orgs, user, navItems, unreadCount, isReadOnly, c
 
           <div className="flex-1" />
 
-          <Link
-            href={`/app/${org.slug}/notifications`}
-            className="relative flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`}
-          >
-            <BellRing className="size-4.5" />
-            {unreadCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold leading-4 text-destructive-foreground">
-                {unreadCount}
-              </span>
-            )}
-          </Link>
+          <NotificationBell
+            orgSlug={org.slug}
+            notifications={notifications}
+            unreadCount={unreadCount}
+            timezone={timezone}
+            isReadOnly={Boolean(isReadOnly)}
+          />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

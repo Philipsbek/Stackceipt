@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isDemoEmail } from "@/lib/data/access";
-import { DEMO_READONLY_ERROR } from "./_shared";
+import { announce, DEMO_READONLY_ERROR } from "./_shared";
 import { subscriptionInputSchema, toMinor, type SubscriptionInput } from "@/lib/domain/validation";
 
 export type ActionResult = { error?: string; ok?: boolean; id?: string };
@@ -69,8 +69,15 @@ export async function createSubscriptionAction(orgSlug: string, input: Subscript
   if (error) return { error: friendly(error.message) };
 
   await recordAudit(ctx.orgId, ctx.memberId, "subscription.created", "subscription", data!.id as string, null, { vendor: parsed.data.vendorName });
+  await announce(supabase, ctx.orgId, {
+    title: "New subscription created",
+    body: `${parsed.data.vendorName} ${parsed.data.productName} was added.`,
+    href: `/app/${orgSlug}/subscriptions/${data!.id as string}`,
+    entityType: "subscription",
+    entityId: data!.id as string,
+  });
   revalidatePath(`/app/${orgSlug}/subscriptions`);
-  revalidatePath(`/app/${orgSlug}`);
+  revalidatePath(`/app/${orgSlug}`, "layout");
   return { ok: true, id: data!.id as string };
 }
 
@@ -92,9 +99,16 @@ export async function updateSubscriptionAction(orgSlug: string, id: string, inpu
   if (error) return { error: friendly(error.message) };
 
   await recordAudit(ctx.orgId, ctx.memberId, "subscription.updated", "subscription", id, null, { vendor: parsed.data.vendorName });
+  await announce(supabase, ctx.orgId, {
+    title: "Subscription updated",
+    body: `${parsed.data.vendorName} ${parsed.data.productName} was updated.`,
+    href: `/app/${orgSlug}/subscriptions/${id}`,
+    entityType: "subscription",
+    entityId: id,
+  });
   revalidatePath(`/app/${orgSlug}/subscriptions/${id}`);
   revalidatePath(`/app/${orgSlug}/subscriptions`);
-  revalidatePath(`/app/${orgSlug}`);
+  revalidatePath(`/app/${orgSlug}`, "layout");
   return { ok: true, id };
 }
 
@@ -103,14 +117,25 @@ export async function archiveSubscriptionAction(orgSlug: string, id: string): Pr
   if (!ctx) return { error: "Not authorized" };
   if (ctx.isReadOnly) return { error: DEMO_READONLY_ERROR };
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("subscriptions")
     .update({ status: "ARCHIVED", archived_at: new Date().toISOString() })
     .eq("organization_id", ctx.orgId)
-    .eq("id", id);
+    .eq("id", id)
+    .select("vendor_name, product_name")
+    .maybeSingle();
   if (error) return { error: friendly(error.message) };
   await recordAudit(ctx.orgId, ctx.memberId, "subscription.archived", "subscription", id, null, {});
+  const name = data ? `${data.vendor_name} ${data.product_name}` : "A subscription";
+  await announce(supabase, ctx.orgId, {
+    title: "Subscription archived",
+    body: `${name} was archived.`,
+    href: `/app/${orgSlug}/subscriptions`,
+    entityType: "subscription",
+    entityId: id,
+  });
   revalidatePath(`/app/${orgSlug}/subscriptions`);
+  revalidatePath(`/app/${orgSlug}`, "layout");
   return { ok: true };
 }
 

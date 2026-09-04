@@ -100,6 +100,30 @@ export async function notify(
   );
 }
 
+/** All ACTIVE member ids for an org. */
+export async function activeMemberIds(supabase: Supa, orgId: string): Promise<string[]> {
+  const { data } = await supabase
+    .from("organization_members")
+    .select("id")
+    .eq("organization_id", orgId)
+    .eq("status", "ACTIVE");
+  return (data ?? []).map((m) => (m as { id: string }).id);
+}
+
+/**
+ * Broadcast a general ANNOUNCEMENT to the whole team — an informational
+ * activity notification emitted on important edits. Recipients include the
+ * actor so the edit is always visible in the notification feed.
+ */
+export async function announce(
+  supabase: Supa,
+  orgId: string,
+  n: { title: string; body: string; href?: string | null; entityType?: string | null; entityId?: string | null },
+): Promise<void> {
+  const ids = await activeMemberIds(supabase, orgId);
+  await notify(supabase, orgId, ids, { type: "ANNOUNCEMENT", ...n });
+}
+
 /** Active OWNER/ADMIN member ids for an org, plus an optional department manager. */
 export async function approverMemberIds(
   supabase: Supa,

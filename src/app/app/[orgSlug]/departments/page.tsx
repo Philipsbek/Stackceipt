@@ -1,14 +1,13 @@
 import { notFound } from "next/navigation";
-import { Plus } from "lucide-react";
 import { getOrgContext } from "@/lib/data/access";
 import { listDepartments } from "@/lib/data/collections";
 import { can } from "@/lib/domain/permissions";
 import { PageHeader } from "@/components/stackceipt/page-header";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Money } from "@/components/stackceipt/money";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/stackceipt/states";
+import { DepartmentDialog } from "./_components/department-dialog";
 
 export default async function DepartmentsPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
@@ -24,7 +23,7 @@ export default async function DepartmentsPage({ params }: { params: Promise<{ or
       <PageHeader
         title="Departments"
         description="Attribute software spend to the teams that use it."
-        actions={canCreate ? <Button disabled><Plus className="size-4" /> New department</Button> : undefined}
+        actions={canCreate ? <DepartmentDialog orgSlug={org.slug} members={members} /> : undefined}
       />
 
       {departments.length === 0 ? (
@@ -36,7 +35,10 @@ export default async function DepartmentsPage({ params }: { params: Promise<{ or
               <CardHeader>
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle>{d.name}</CardTitle>
-                  {d.managerName ? <Badge variant="soft">{d.managerName}</Badge> : <Badge variant="warning">No manager</Badge>}
+                  <div className="flex items-center gap-1.5">
+                    {d.managerName ? <Badge variant="soft">{d.managerName}</Badge> : <Badge variant="warning">No manager</Badge>}
+                    {canCreate ? <DepartmentDialog orgSlug={org.slug} members={members} department={d} /> : null}
+                  </div>
                 </div>
                 {d.description ? <p className="text-sm text-muted-foreground">{d.description}</p> : null}
               </CardHeader>
