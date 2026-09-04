@@ -16,6 +16,7 @@ import {
 import { EmptyState } from "@/components/stackceipt/states";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SubscriptionsToolbar } from "./_components/toolbar";
+import { ProductMark } from "@/components/stackceipt/product-mark";
 
 export default async function SubscriptionsPage({
   params,
@@ -94,7 +95,7 @@ export default async function SubscriptionsPage({
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead>Vendor / product</TableHead>
+                  <TableHead>Product / category</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Department</TableHead>
                   <TableHead className="text-right">Monthly</TableHead>
@@ -107,10 +108,15 @@ export default async function SubscriptionsPage({
                 {rows.map((s) => (
                   <TableRow key={s.id} className="group">
                     <TableCell>
-                      <Link href={`${base}/subscriptions/${s.id}`} className="block font-medium hover:underline">
-                        {s.vendorName}
-                      </Link>
-                      <div className="text-xs text-muted-foreground">{s.productName}</div>
+                      <div className="flex items-center gap-3">
+                        <ProductMark productName={s.productName} vendorName={s.vendorName} />
+                        <div className="min-w-0">
+                          <Link href={`${base}/subscriptions/${s.id}`} className="block truncate font-medium hover:underline">
+                            {s.productName}
+                          </Link>
+                          <div className="truncate text-xs text-muted-foreground">{s.category ?? "Uncategorized"}</div>
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell><SubscriptionStatusBadge status={s.status} /></TableCell>
                     <TableCell className="text-muted-foreground">{s.departmentName ?? "—"}</TableCell>
@@ -140,9 +146,12 @@ export default async function SubscriptionsPage({
               <Link key={s.id} href={`${base}/subscriptions/${s.id}`} className="block">
                 <Card className="p-4">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="truncate font-medium">{s.vendorName}</div>
-                      <div className="truncate text-xs text-muted-foreground">{s.productName}</div>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <ProductMark productName={s.productName} vendorName={s.vendorName} />
+                      <div className="min-w-0">
+                        <div className="truncate font-medium">{s.productName}</div>
+                        <div className="truncate text-xs text-muted-foreground">{s.category ?? "Uncategorized"}</div>
+                      </div>
                     </div>
                     <SubscriptionStatusBadge status={s.status} />
                   </div>

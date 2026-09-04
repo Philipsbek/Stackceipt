@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { ProductCombobox } from "@/components/stackceipt/product-combobox";
 
 type FormState = {
   vendorName: string;
@@ -180,7 +181,23 @@ export function SubscriptionForm({ base, orgSlug, subscriptionId, baseCurrency, 
             <Input value={state.vendorName} onChange={(e) => set("vendorName", e.target.value)} placeholder="Figma" />
           </Field>
           <Field label="Product" error={errors.productName} required>
-            <Input value={state.productName} onChange={(e) => set("productName", e.target.value)} placeholder="Organization" />
+            <ProductCombobox
+              value={state.productName}
+              onSelect={(product) => {
+                setState((current) => ({
+                  ...current,
+                  productName: product.name,
+                  vendorName: product.vendor,
+                  category: product.category,
+                  websiteUrl: product.website,
+                }));
+                setErrors((current) => ({ ...current, productName: "", vendorName: "" }));
+              }}
+              onCustom={(name) => {
+                set("productName", name);
+                setErrors((current) => ({ ...current, productName: "" }));
+              }}
+            />
           </Field>
           <Field label="Category" error={errors.category}>
             <Input value={state.category} onChange={(e) => set("category", e.target.value)} placeholder="Design" />
