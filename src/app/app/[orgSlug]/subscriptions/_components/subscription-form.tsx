@@ -177,9 +177,6 @@ export function SubscriptionForm({ base, orgSlug, subscriptionId, baseCurrency, 
       <Card>
         <CardHeader><CardTitle>Identity</CardTitle></CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <Field label="Vendor" error={errors.vendorName} required>
-            <Input value={state.vendorName} onChange={(e) => set("vendorName", e.target.value)} placeholder="Figma" />
-          </Field>
           <Field label="Product" error={errors.productName} required>
             <ProductCombobox
               value={state.productName}
@@ -194,10 +191,17 @@ export function SubscriptionForm({ base, orgSlug, subscriptionId, baseCurrency, 
                 setErrors((current) => ({ ...current, productName: "", vendorName: "" }));
               }}
               onCustom={(name) => {
-                set("productName", name);
-                setErrors((current) => ({ ...current, productName: "" }));
+                // Vendor is derived from the product; for a custom product default it to the name.
+                setState((current) => ({ ...current, productName: name, vendorName: name }));
+                setErrors((current) => ({ ...current, productName: "", vendorName: "" }));
               }}
             />
+          </Field>
+          <Field label="Vendor" error={errors.vendorName}>
+            <div className="flex h-9 items-center rounded-lg border border-transparent bg-secondary px-3 text-sm text-muted-foreground">
+              {state.vendorName || "Set from the product"}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">Set automatically from the product.</p>
           </Field>
           <Field label="Category" error={errors.category}>
             <Input value={state.category} onChange={(e) => set("category", e.target.value)} placeholder="Design" />

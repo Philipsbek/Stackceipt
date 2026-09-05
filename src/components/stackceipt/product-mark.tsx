@@ -27,7 +27,7 @@ export function ProductMark({
       )}
       aria-hidden="true"
     >
-      {product ? (
+      {product?.icon ? (
         <svg viewBox="0 0 24 24" className="size-5" style={{ color: `#${product.icon.hex}` }}>
           <path fill="currentColor" d={product.icon.path} />
         </svg>

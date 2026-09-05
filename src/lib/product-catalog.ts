@@ -4,6 +4,10 @@ import {
   siDiscord, siDropbox, siFigma, siGithub, siGitlab, siHubspot,
   siIntercom, siJira, siMailchimp, siMiro, siNotion, siOkta,
   siSentry, siShopify, siStripe, siTrello, siZendesk, siZoom,
+  // AI tools
+  siAnthropic, siClaude, siGithubcopilot, siGooglegemini, siPerplexity,
+  siHuggingface, siMistralai, siElevenlabs, siReplicate, siOllama,
+  siVercel, siLangchain,
 } from "simple-icons";
 
 export type ProductCatalogItem = {
@@ -12,7 +16,8 @@ export type ProductCatalogItem = {
   vendor: string;
   category: string;
   website: string;
-  icon: SimpleIcon;
+  /** Brand logo, when a matching simple-icon exists; otherwise initials are shown. */
+  icon?: SimpleIcon;
 };
 
 export const PRODUCT_CATALOG: ProductCatalogItem[] = [
@@ -40,4 +45,37 @@ export const PRODUCT_CATALOG: ProductCatalogItem[] = [
   { id: "trello", name: "Trello", vendor: "Atlassian", category: "Project management", website: "https://trello.com", icon: siTrello },
   { id: "zendesk", name: "Zendesk", vendor: "Zendesk", category: "Customer support", website: "https://zendesk.com", icon: siZendesk },
   { id: "zoom", name: "Zoom", vendor: "Zoom", category: "Communication", website: "https://zoom.us", icon: siZoom },
+
+  // ── AI ──────────────────────────────────────────────────────────
+  { id: "chatgpt", name: "ChatGPT", vendor: "OpenAI", category: "AI", website: "https://openai.com/chatgpt" },
+  { id: "chatgpt-team", name: "ChatGPT Team", vendor: "OpenAI", category: "AI", website: "https://openai.com/chatgpt/team" },
+  { id: "chatgpt-enterprise", name: "ChatGPT Enterprise", vendor: "OpenAI", category: "AI", website: "https://openai.com/enterprise" },
+  { id: "openai-api", name: "OpenAI API", vendor: "OpenAI", category: "AI", website: "https://platform.openai.com" },
+  { id: "codex", name: "Codex", vendor: "OpenAI", category: "AI", website: "https://openai.com/codex" },
+  { id: "claude", name: "Claude", vendor: "Anthropic", category: "AI", website: "https://claude.ai", icon: siClaude },
+  { id: "claude-pro", name: "Claude Pro", vendor: "Anthropic", category: "AI", website: "https://claude.ai", icon: siClaude },
+  { id: "claude-team", name: "Claude Team", vendor: "Anthropic", category: "AI", website: "https://claude.ai/team", icon: siClaude },
+  { id: "claude-code", name: "Claude Code", vendor: "Anthropic", category: "AI", website: "https://claude.com/claude-code", icon: siClaude },
+  { id: "anthropic-api", name: "Anthropic API", vendor: "Anthropic", category: "AI", website: "https://anthropic.com", icon: siAnthropic },
+  { id: "github-copilot", name: "GitHub Copilot", vendor: "GitHub", category: "AI", website: "https://github.com/features/copilot", icon: siGithubcopilot },
+  { id: "gemini", name: "Gemini", vendor: "Google", category: "AI", website: "https://gemini.google.com", icon: siGooglegemini },
+  { id: "gemini-advanced", name: "Gemini Advanced", vendor: "Google", category: "AI", website: "https://gemini.google.com", icon: siGooglegemini },
+  { id: "cursor", name: "Cursor", vendor: "Anysphere", category: "AI", website: "https://cursor.com" },
+  { id: "perplexity", name: "Perplexity", vendor: "Perplexity", category: "AI", website: "https://perplexity.ai", icon: siPerplexity },
+  { id: "perplexity-pro", name: "Perplexity Pro", vendor: "Perplexity", category: "AI", website: "https://perplexity.ai/pro", icon: siPerplexity },
+  { id: "midjourney", name: "Midjourney", vendor: "Midjourney", category: "AI", website: "https://midjourney.com" },
+  { id: "huggingface", name: "Hugging Face", vendor: "Hugging Face", category: "AI", website: "https://huggingface.co", icon: siHuggingface },
+  { id: "mistral", name: "Mistral AI", vendor: "Mistral AI", category: "AI", website: "https://mistral.ai", icon: siMistralai },
+  { id: "elevenlabs", name: "ElevenLabs", vendor: "ElevenLabs", category: "AI", website: "https://elevenlabs.io", icon: siElevenlabs },
+  { id: "replicate", name: "Replicate", vendor: "Replicate", category: "AI", website: "https://replicate.com", icon: siReplicate },
+  { id: "cohere", name: "Cohere", vendor: "Cohere", category: "AI", website: "https://cohere.com" },
+  { id: "grok", name: "Grok", vendor: "xAI", category: "AI", website: "https://x.ai" },
+  { id: "deepseek", name: "DeepSeek", vendor: "DeepSeek", category: "AI", website: "https://deepseek.com" },
+  { id: "ollama", name: "Ollama", vendor: "Ollama", category: "AI", website: "https://ollama.com", icon: siOllama },
+  { id: "jasper", name: "Jasper", vendor: "Jasper", category: "AI", website: "https://jasper.ai" },
+  { id: "runway", name: "Runway", vendor: "Runway", category: "AI", website: "https://runwayml.com" },
+  { id: "synthesia", name: "Synthesia", vendor: "Synthesia", category: "AI", website: "https://synthesia.io" },
+  { id: "v0", name: "v0", vendor: "Vercel", category: "AI", website: "https://v0.dev", icon: siVercel },
+  { id: "langsmith", name: "LangSmith", vendor: "LangChain", category: "AI", website: "https://smith.langchain.com", icon: siLangchain },
+  { id: "notion-ai", name: "Notion AI", vendor: "Notion", category: "AI", website: "https://notion.so/product/ai", icon: siNotion },
 ].sort((a, b) => a.name.localeCompare(b.name));

@@ -12,6 +12,13 @@ type Props = {
 };
 
 function ProductIcon({ product, className }: { product: ProductCatalogItem; className?: string }) {
+  if (!product.icon) {
+    return (
+      <span className={cn("flex size-5 items-center justify-center text-[10px] font-semibold text-muted-foreground", className)} aria-hidden="true">
+        {product.name.slice(0, 2).toUpperCase()}
+      </span>
+    );
+  }
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className={cn("size-5", className)} style={{ color: `#${product.icon.hex}` }}>
       <path fill="currentColor" d={product.icon.path} />
