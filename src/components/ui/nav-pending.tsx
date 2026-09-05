@@ -1,14 +1,15 @@
 "use client";
 
+import * as React from "react";
 import { useLinkStatus } from "next/link";
-import { Loader2 } from "lucide-react";
+import { withSpinner } from "./with-spinner";
 
 /**
- * Renders a spinner while the surrounding <Link> navigation is in flight, and
- * nothing at rest. Must be rendered as a descendant of a next/link Link — the
- * Button component injects it automatically into link-based buttons.
+ * Wraps a link button's content and swaps its icon for a spinner while the
+ * navigation is in flight. Must be a descendant of a next/link Link — the
+ * Button component wraps link-based buttons in it automatically.
  */
-export function NavPending() {
+export function NavPendingContent({ children }: { children: React.ReactNode }) {
   const { pending } = useLinkStatus();
-  return pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null;
+  return <>{pending ? withSpinner(children) : children}</>;
 }
