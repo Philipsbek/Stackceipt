@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import {
   subscriptionInputSchema,
   toMinor,
@@ -337,9 +337,10 @@ export function SubscriptionForm({ base, orgSlug, subscriptionId, baseCurrency, 
       </Card>
 
       <div className="flex items-center justify-end gap-2">
-        <Button type="button" variant="ghost" onClick={() => router.push(`${base}/subscriptions`)}>Cancel</Button>
-        <Button type="submit" disabled={submitting}>
-          {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
+        <Button asChild variant="ghost">
+          <Link href={`${base}/subscriptions`}>Cancel</Link>
+        </Button>
+        <Button type="submit" loading={submitting}>
           {mode === "create" ? "Add subscription" : "Save changes"}
         </Button>
       </div>
