@@ -29,6 +29,7 @@ import { Wordmark } from "@/components/brand/wordmark";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ConnectionStatus } from "@/components/shell/connection-status";
+import { UpdateButton } from "@/components/shell/update-button";
 import { NotificationBell } from "@/components/shell/notification-bell";
 import type { Notification } from "@/lib/domain/types";
 import {
@@ -253,8 +254,9 @@ function SidebarContent({
         })}
       </nav>
 
-      <div className="border-t border-sidebar-border p-3">
+      <div className="flex items-center justify-between gap-2 border-t border-sidebar-border p-3">
         <ConnectionStatus />
+        <UpdateButton />
       </div>
     </div>
   );
