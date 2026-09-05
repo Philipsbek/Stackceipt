@@ -31,18 +31,23 @@ alter table public.push_subscriptions enable row level security;
 
 -- Owners can see, register, and remove only their own device subscriptions.
 -- (auth.uid() is the current user; user_id ties a subscription to that user.)
+-- Drop-then-create keeps this migration idempotent / safe to re-run.
+drop policy if exists push_subscriptions_select on public.push_subscriptions;
 create policy push_subscriptions_select on public.push_subscriptions
   for select using (user_id = auth.uid());
 
+drop policy if exists push_subscriptions_insert on public.push_subscriptions;
 create policy push_subscriptions_insert on public.push_subscriptions
   for insert with check (
     user_id = auth.uid()
     and member_id = public.current_member_id(organization_id)
   );
 
+drop policy if exists push_subscriptions_update on public.push_subscriptions;
 create policy push_subscriptions_update on public.push_subscriptions
   for update using (user_id = auth.uid())
   with check (user_id = auth.uid());
 
+drop policy if exists push_subscriptions_delete on public.push_subscriptions;
 create policy push_subscriptions_delete on public.push_subscriptions
   for delete using (user_id = auth.uid());
