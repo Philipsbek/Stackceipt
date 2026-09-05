@@ -22,6 +22,14 @@ export function MotionReveal({ children, className, delay = 0 }: MotionRevealPro
       return;
     }
 
+    // Above-the-fold content should appear on load, not wait for a scroll —
+    // reveal immediately if the element is already within the viewport.
+    const rect = element.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      setIsVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {

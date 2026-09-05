@@ -62,6 +62,10 @@
   --radius-card: 24px;
   --radius-nested: 10px;
   --radius-small: 6px;
+
+  /* Landing hero */
+  --hero-mint: #e7f3ea; /* soft muted mint wash behind the hero + nav */
+  --hero-mint-deep: #d4e9d9;
 }
 
 @theme inline {
@@ -188,12 +192,72 @@
 
 .landing-header-enter {
   animation: landing-header-enter 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  transition: box-shadow 240ms ease, background-color 240ms ease;
+  transition: box-shadow 240ms ease, background-color 240ms ease, border-color 240ms ease, backdrop-filter 240ms ease;
+  /* Transparent at the top so the dark hero shows behind the nav. No border here
+     (a transparent border left a hairline of the page background at the very top). */
+  background-color: transparent;
+  border-bottom: 0 solid transparent;
 }
 
 .landing-header-enter[data-scrolled="true"] {
   background-color: rgb(245 245 245 / 94%);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
   box-shadow: 0 8px 24px -22px rgb(10 10 10 / 70%);
+}
+
+/* Matte charcoal behind the hero and the (transparent) nav — flat, no sheen. */
+.landing-hero-bg {
+  background: #1a1a1c;
+}
+
+/* When the nav sits transparent over the dark hero (top of page), flip its
+   content to light. Scrolled state reverts to the light-bar defaults. */
+.landing-logo {
+  transition: filter 240ms ease;
+}
+.landing-header-enter[data-scrolled="false"] .landing-logo {
+  filter: brightness(0) invert(1);
+}
+.landing-header-enter[data-scrolled="false"] .landing-nav-light {
+  color: #ffffff;
+}
+.landing-header-enter[data-scrolled="false"] .landing-nav-light:hover {
+  background-color: rgb(255 255 255 / 12%);
+  color: #ffffff;
+}
+.landing-header-enter[data-scrolled="false"] .landing-nav-cta {
+  background-color: #ffffff;
+  color: #0a0a0a;
+}
+.landing-header-enter[data-scrolled="false"] .landing-nav-cta:hover {
+  background-color: rgb(255 255 255 / 88%);
+  color: #0a0a0a;
+}
+
+/* Soft-shadowed floating card in the hero collage (white cards on black). */
+.hero-float {
+  box-shadow: 0 30px 60px -28px rgb(0 0 0 / 70%), 0 10px 24px -16px rgb(0 0 0 / 55%);
+}
+
+/* Hero collage: a fixed-size overlapping composition that scales down as one
+   piece on smaller screens, so it looks identical everywhere (never reflows). */
+.hero-collage-frame {
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  max-width: 560px; /* design width; never upscaled beyond this */
+  margin-inline: auto;
+  aspect-ratio: 560 / 540; /* reserves the scaled height */
+}
+.hero-collage-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 560px;
+  height: 540px;
+  transform-origin: top left;
+  transform: scale(calc(100cqw / 560px));
 }
 
 .landing-scroll-progress {
@@ -220,17 +284,6 @@
 .landing-reveal[data-visible="true"] {
   opacity: 1;
   transform: translateY(0);
-}
-
-.landing-preview-shell > .landing-scroll-parallax > * {
-  transition:
-    border-color 300ms ease,
-    box-shadow 300ms ease;
-}
-
-.landing-preview-shell:hover > .landing-scroll-parallax > * {
-  border-color: #d4d4d4;
-  box-shadow: 0 16px 38px -28px rgb(10 10 10 / 45%);
 }
 
 .landing-feature-card,

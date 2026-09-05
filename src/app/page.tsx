@@ -40,70 +40,84 @@ export default function LandingPage() {
   return (
     <div className="min-h-dvh bg-background">
       <LandingScrollEffects />
-      {/* Header */}
-      <header data-landing-header className="landing-header-enter sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur">
+      {/* Header (transparent over the mint hero, solid on scroll) */}
+      <header data-landing-header className="landing-header-enter sticky top-0 z-30">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center" aria-label="Stackceipt home">
-            <Wordmark height={40} />
+            <Wordmark height={40} className="landing-logo" />
           </Link>
           <nav className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="landing-nav-light">
               <Link href="/auth/login">Log in</Link>
             </Button>
-            <Button asChild size="sm">
+            <Button asChild size="sm" className="landing-nav-cta">
               <Link href="/auth/sign-up">Get started</Link>
             </Button>
           </nav>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="mx-auto max-w-6xl px-4 pb-8 pt-14 sm:px-6 sm:pt-20">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr]">
-          <div className="space-y-6">
-            <MotionReveal delay={50}>
-              <Badge variant="soft" className="gap-1.5">
-                <span className="size-1.5 rounded-full bg-[#171717]" />
-                Software subscription governance for SMBs
-              </Badge>
-            </MotionReveal>
-            <MotionReveal delay={120}>
-              <h1 className="display-heading text-balance text-4xl sm:text-5xl">
-                Know what your software stack is costing you.
-              </h1>
-            </MotionReveal>
-            <MotionReveal delay={190}>
-              <p className="max-w-xl text-base text-muted-foreground">
-                Stackceipt is the calm, financially precise place to track every subscription,
-                renewal, approval, and review — and cut the cost of tools you no longer need.
-              </p>
-            </MotionReveal>
-            <MotionReveal delay={260}>
-              <div className="flex flex-wrap items-center gap-3">
-                <Button asChild size="lg" className="group">
-                  <Link href="/auth/sign-up">
-                    Start tracking your stack
-                    <ArrowRight className="size-4 transition-transform duration-200 ease-out group-hover:translate-x-1 group-active:translate-x-0 motion-reduce:transition-none" />
-                  </Link>
-                </Button>
-                <form action={startDemoAction}>
-                  <DemoCtaButton />
-                </form>
+      {/* Hero — full-bleed dark band pulled up behind the transparent nav.
+          The extra pixel of pull-up hides any sub-pixel sliver of the page
+          background at the very top edge. */}
+      <section className="landing-hero-bg relative -mt-[calc(3.5rem+1px)] overflow-hidden">
+        <HeroBackdrop />
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-16 pt-24 sm:px-6 sm:pt-28 lg:pb-24">
+          <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr]">
+            <div className="space-y-7">
+              <MotionReveal delay={50}>
+                <p className="flex items-center gap-2 text-sm font-medium text-white/55">
+                  <span className="size-1.5 rounded-full bg-white/45" />
+                  Software subscription governance for SMBs
+                </p>
+              </MotionReveal>
+              <MotionReveal delay={120}>
+                <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
+                  Know what your software stack is costing you.
+                </h1>
+              </MotionReveal>
+              <MotionReveal delay={190}>
+                <p className="max-w-xl text-base text-white/65 sm:text-lg">
+                  One calm, financially precise place to track every subscription, renewal,
+                  approval, and review — and cut the cost of tools you no longer need.
+                </p>
+              </MotionReveal>
+              <MotionReveal delay={260}>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button asChild size="lg" className="group h-12 px-7 text-[15px] !bg-white !text-[#0a0a0a] hover:!bg-white/90">
+                    <Link href="/auth/sign-up">
+                      Start tracking your stack
+                      <ArrowRight className="size-4 transition-transform duration-200 ease-out group-hover:translate-x-1 group-active:translate-x-0 motion-reduce:transition-none" />
+                    </Link>
+                  </Button>
+                  <form action={startDemoAction}>
+                    <DemoCtaButton />
+                  </form>
+                </div>
+              </MotionReveal>
+              <MotionReveal delay={330}>
+                <div className="space-y-3 pt-1">
+                  <p className="text-sm font-medium text-white">Built for finance &amp; ops teams</p>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-xs font-medium text-white/80">
+                      <Sparkles className="size-3.5" /> Deterministic — no AI guesswork
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-xs font-medium text-white/80">
+                      <ShieldCheck className="size-3.5" /> Row-level security &amp; audit log
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/45">No credit card required. Set up your organization in minutes.</p>
+                </div>
+              </MotionReveal>
+            </div>
+
+            {/* Product interface collage */}
+            <MotionReveal delay={180} className="landing-preview-shell">
+              <div data-scroll-parallax="-0.018" className="landing-scroll-parallax">
+                <HeroCollage />
               </div>
             </MotionReveal>
-            <MotionReveal delay={330}>
-              <p className="text-xs text-muted-foreground">
-                No credit card required. Set up your organization in minutes.
-              </p>
-            </MotionReveal>
           </div>
-
-          {/* Real-component product preview */}
-          <MotionReveal delay={180} className="landing-preview-shell">
-            <div data-scroll-parallax="-0.018" className="landing-scroll-parallax">
-              <ProductPreview />
-            </div>
-          </MotionReveal>
         </div>
       </section>
 
@@ -318,9 +332,152 @@ export default function LandingPage() {
   );
 }
 
-function ProductPreview() {
+function HeroBackdrop() {
   return (
-    <Card className="overflow-hidden p-0">
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* Fine graph-paper grid, strongest top-right (behind the collage), fading
+          out toward the headline for legibility. */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          maskImage: "radial-gradient(125% 125% at 82% 12%, #000 0%, rgba(0,0,0,0.35) 48%, transparent 82%)",
+          WebkitMaskImage: "radial-gradient(125% 125% at 82% 12%, #000 0%, rgba(0,0,0,0.35) 48%, transparent 82%)",
+        }}
+      />
+      {/* Concentric rings behind the collage */}
+      <svg className="absolute -right-28 -top-28 h-[660px] w-[660px] opacity-[0.06]" viewBox="0 0 660 660" fill="none" stroke="white" strokeWidth="1.25">
+        <circle cx="330" cy="330" r="110" />
+        <circle cx="330" cy="330" r="190" />
+        <circle cx="330" cy="330" r="270" />
+        <circle cx="330" cy="330" r="350" />
+      </svg>
+      {/* Oversized Stackceipt "stacked layers" mark, bottom-left, very faint */}
+      <svg className="absolute -bottom-20 -left-16 hidden h-[360px] w-[360px] opacity-[0.05] lg:block" viewBox="0 0 100 100" fill="none" stroke="white" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round">
+        <path d="M50 12 L86 30 L50 48 L14 30 Z" />
+        <path d="M14 50 L50 68 L86 50" />
+        <path d="M14 70 L50 88 L86 70" />
+      </svg>
+      {/* Soft top vignette so the nav stays clean */}
+      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/25 to-transparent" />
+    </div>
+  );
+}
+
+function HeroCollage() {
+  // The overlapping composition is laid out at a fixed design size and scaled
+  // down proportionally on smaller screens (via container-query units), so it
+  // looks identical on desktop, tablet, and mobile — nothing reflows or moves.
+  return (
+    <div className="hero-collage-frame">
+      <div className="hero-collage-inner">
+        {/* Base: dashboard */}
+        <ProductPreview className="hero-float absolute left-[5%] top-9 z-10 w-[74%]" />
+
+        {/* Janitor savings — top right */}
+        <SavingsCard className="hero-float absolute right-0 top-0 z-30 w-[52%] rotate-[1.4deg]" />
+
+        {/* Renewal notice — bottom left */}
+        <RenewalCard className="hero-float absolute bottom-0 left-0 z-20 w-[54%] -rotate-[1.4deg]" />
+
+        {/* Spend trend — bottom right */}
+        <SpendTrendCard className="hero-float absolute bottom-7 right-1 z-40 w-[50%]" />
+      </div>
+    </div>
+  );
+}
+
+function SavingsCard({ className }: { className?: string }) {
+  const items = [
+    { t: "Unused seats · Figma", s: "HIGH" as const, v: 144000 },
+    { t: "Duplicate tool · Notion", s: "MEDIUM" as const, v: 96000 },
+    { t: "Trial ending · Linear", s: "LOW" as const, v: 0 },
+  ];
+  const dot: Record<string, string> = { HIGH: "#dc2626", MEDIUM: "#d97706", LOW: "#0891b2" };
+  return (
+    <Card className={`overflow-hidden p-0 ${className ?? ""}`}>
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <Sparkles className="size-4" /> Janitor findings
+        </div>
+        <Badge variant="soft">4 open</Badge>
+      </div>
+      <div className="space-y-2.5 p-4">
+        <div>
+          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Supportable savings</div>
+          <div className="text-xl font-semibold tabular-nums"><Money minor={240000} currency="USD" suffix="/yr" showCents={false} /></div>
+        </div>
+        <div className="space-y-1.5">
+          {items.map((i) => (
+            <div key={i.t} className="flex items-center justify-between gap-2 text-xs">
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="size-1.5 shrink-0 rounded-full" style={{ backgroundColor: dot[i.s] }} />
+                <span className="truncate">{i.t}</span>
+              </span>
+              <span className="shrink-0 font-medium tabular-nums text-muted-foreground">
+                {i.v ? <Money minor={i.v} currency="USD" showCents={false} /> : "—"}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function RenewalCard({ className }: { className?: string }) {
+  return (
+    <Card className={`overflow-hidden p-0 ${className ?? ""}`}>
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <CalendarClock className="size-4" /> Upcoming renewal
+        </div>
+        <Badge variant="warning">Notice in 17d</Badge>
+      </div>
+      <div className="space-y-3 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold">GitHub Enterprise</div>
+            <div className="text-xs text-muted-foreground">Engineering · Renews Sep 20</div>
+          </div>
+          <span className="shrink-0 text-sm font-semibold tabular-nums"><Money minor={2100000} currency="USD" suffix="/yr" showCents={false} /></span>
+        </div>
+        <div className="flex items-center gap-2 rounded-md border border-border bg-surface-alt px-3 py-2 text-xs text-muted-foreground">
+          <Clock3 className="size-3.5" /> Give notice by Sep 3 to avoid auto-renew
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function SpendTrendCard({ className }: { className?: string }) {
+  const bars = [42, 55, 48, 63, 58, 71, 66, 78];
+  const max = Math.max(...bars);
+  return (
+    <Card className={`overflow-hidden p-0 ${className ?? ""}`}>
+      <div className="flex items-center justify-between px-4 pt-4">
+        <div>
+          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Monthly recurring</div>
+          <div className="text-xl font-semibold tabular-nums"><Money minor={1_698_400} currency="USD" showCents={false} /></div>
+        </div>
+        <Badge variant="soft" className="gap-1">
+          <BadgeDollarSign className="size-3.5" /> +6%
+        </Badge>
+      </div>
+      <div className="flex h-16 items-end gap-1.5 px-4 pb-4 pt-3">
+        {bars.map((b, i) => (
+          <span key={i} className="flex-1 rounded-t bg-[#171717]" style={{ height: `${(b / max) * 100}%`, opacity: 0.35 + (i / bars.length) * 0.65 }} />
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function ProductPreview({ className }: { className?: string }) {
+  return (
+    <Card className={`overflow-hidden p-0 ${className ?? ""}`}>
       <div className="flex items-center justify-between border-b border-border bg-surface-alt px-4 py-2.5">
         <div className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-full bg-[#e5e5e5]" />
