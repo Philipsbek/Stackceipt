@@ -10,6 +10,7 @@ import { buildCategoryColorMap, categoryColor } from "@/lib/domain/category-colo
 import { PageHeader } from "@/components/stackceipt/page-header";
 import { MetricCard } from "@/components/stackceipt/metric-card";
 import { Money } from "@/components/stackceipt/money";
+import { ProductMark } from "@/components/stackceipt/product-mark";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -106,12 +107,15 @@ export default async function DashboardPage({
                   const urgency = urgencyBucket(s.nextRenewalDate, today, data.renewalWindowDays);
                   return (
                     <li key={s.id} className="flex items-center justify-between gap-3 py-2.5">
-                      <div className="min-w-0">
-                        <Link href={`${base}/subscriptions/${s.id}`} className="block truncate text-sm font-medium hover:underline">
-                          {s.vendorName} {s.productName}
-                        </Link>
-                        <div className="text-xs text-muted-foreground">
-                          Renews {formatDate(s.nextRenewalDate)} · {s.departmentName ?? "No department"}
+                      <div className="flex min-w-0 items-center gap-3">
+                        <ProductMark productName={s.productName} vendorName={s.vendorName} className="size-8" />
+                        <div className="min-w-0">
+                          <Link href={`${base}/subscriptions/${s.id}`} className="block truncate text-sm font-medium hover:underline">
+                            {s.vendorName} {s.productName}
+                          </Link>
+                          <div className="text-xs text-muted-foreground">
+                            Renews {formatDate(s.nextRenewalDate)} · {s.departmentName ?? "No department"}
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">

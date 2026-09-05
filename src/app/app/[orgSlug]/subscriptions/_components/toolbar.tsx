@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,13 +25,14 @@ export function SubscriptionsToolbar({ departments, categories }: ToolbarProps) 
   const params = useSearchParams();
 
   const [search, setSearch] = React.useState(params.get("q") ?? "");
+  const [isPending, startTransition] = React.useTransition();
 
   const update = React.useCallback(
     (key: string, value: string | null) => {
       const next = new URLSearchParams(params.toString());
       if (value && value !== "all") next.set(key, value);
       else next.delete(key);
-      router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+      startTransition(() => router.replace(`${pathname}?${next.toString()}`, { scroll: false }));
     },
     [params, pathname, router],
   );
@@ -56,9 +57,13 @@ export function SubscriptionsToolbar({ departments, categories }: ToolbarProps) 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search vendor, product, category…"
-          className="pl-9"
+          className="pl-9 pr-9"
           aria-label="Search subscriptions"
+          aria-busy={isPending}
         />
+        {isPending ? (
+          <Loader2 className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+        ) : null}
       </div>
 
       <Select value={params.get("status") ?? "all"} onValueChange={(v) => update("status", v)}>
@@ -122,7 +127,7 @@ export function SubscriptionsToolbar({ departments, categories }: ToolbarProps) 
           size="sm"
           onClick={() => {
             setSearch("");
-            router.replace(pathname, { scroll: false });
+            startTransition(() => router.replace(pathname, { scroll: false }));
           }}
         >
           <X className="size-4" /> Clear
