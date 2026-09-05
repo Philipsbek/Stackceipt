@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { Toaster } from "@/components/ui/sonner";
 import { ChatBot } from "@/components/bot/chat-bot";
 import { PwaSetup } from "@/components/pwa/pwa-setup";
+import { RouteProgress } from "@/components/shell/route-progress";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -32,6 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body>
+        <RouteProgress />
         {children}
         <ChatBot />
         <PwaSetup />
