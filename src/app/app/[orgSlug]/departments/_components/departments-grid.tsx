@@ -8,6 +8,7 @@ import { Money } from "@/components/stackceipt/money";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/stackceipt/states";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DepartmentDialog } from "./department-dialog";
 import { DepartmentMembers, type DeptMember } from "./department-members";
 
@@ -29,26 +30,51 @@ export function DepartmentsGrid({
   canManage: boolean;
 }) {
   const [query, setQuery] = React.useState("");
+  const [memberFilter, setMemberFilter] = React.useState("all");
   const q = query.trim().toLowerCase();
-  const filtered = q ? departments.filter((d) => d.name.toLowerCase().includes(q)) : departments;
+  const selectedMemberName = roster.find((m) => m.id === memberFilter)?.name ?? "";
+
+  const filtered = departments.filter((d) => {
+    const nameMatch = !q || d.name.toLowerCase().includes(q);
+    const memberMatch = memberFilter === "all" || d.memberIds.includes(memberFilter);
+    return nameMatch && memberMatch;
+  });
+
+  const emptyDescription =
+    memberFilter !== "all"
+      ? `${selectedMemberName} isn’t in any department${q ? ` matching “${query.trim()}”` : ""}.`
+      : `Nothing matches “${query.trim()}”.`;
 
   return (
     <div className="space-y-4">
-      <div className="relative max-w-sm">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search departments…"
-          aria-label="Search departments"
-          className="h-9 w-full rounded-lg border border-transparent bg-secondary pl-9 pr-3 text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-border focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-ring/40 sm:text-sm"
-        />
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search departments…"
+            aria-label="Search departments"
+            className="h-9 w-full rounded-lg border border-transparent bg-secondary pl-9 pr-3 text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-border focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-ring/40 sm:text-sm"
+          />
+        </div>
+        <Select value={memberFilter} onValueChange={setMemberFilter}>
+          <SelectTrigger className="w-full sm:w-56" aria-label="Filter by member">
+            <SelectValue placeholder="All members" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All members</SelectItem>
+            {roster.map((m) => (
+              <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {departments.length === 0 ? (
         <EmptyState title="No departments yet" description="Create a department to organize subscriptions and spend." />
       ) : filtered.length === 0 ? (
-        <EmptyState title="No matching departments" description={`Nothing matches “${query.trim()}”.`} />
+        <EmptyState title="No matching departments" description={emptyDescription} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((d) => {
