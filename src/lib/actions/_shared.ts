@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { isDemoEmail } from "@/lib/data/access";
+import { dispatchPushToMembers } from "@/lib/push/send";
 import type { NotificationType, OrganizationRole } from "@/lib/domain/enums";
 
 export type Supa = Awaited<ReturnType<typeof createClient>>;
@@ -98,6 +99,19 @@ export async function notify(
       entity_id: n.entityId ?? null,
     })),
   );
+
+  // Mirror the in-app notification to any registered devices via Web Push.
+  // Best-effort: never let a push failure break the write that triggered it.
+  try {
+    await dispatchPushToMembers(orgId, unique, {
+      title: n.title,
+      body: n.body,
+      url: n.href ?? `/app`,
+      tag: n.entityId ?? n.type,
+    });
+  } catch {
+    // Swallow — push is a delivery convenience, not a source of truth.
+  }
 }
 
 /** All ACTIVE member ids for an org. */

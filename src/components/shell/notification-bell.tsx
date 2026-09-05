@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { BellRing, Check, Megaphone } from "lucide-react";
 import { markAllNotificationsReadAction, markNotificationReadAction } from "@/lib/actions/notifications";
+import { PushControls } from "@/components/pwa/push-controls";
 import { formatDateTime } from "@/lib/domain/dates";
 import type { Notification } from "@/lib/domain/types";
 import type { NotificationType } from "@/lib/domain/enums";
@@ -136,6 +137,8 @@ export function NotificationBell({ orgSlug, notifications, unreadCount, isReadOn
               })}
             </div>
           )}
+
+          <PushControls orgSlug={orgSlug} isReadOnly={isReadOnly} />
 
           <Link
             href={`/app/${orgSlug}/notifications`}
