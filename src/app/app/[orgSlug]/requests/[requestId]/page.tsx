@@ -95,7 +95,7 @@ export default async function RequestDetailPage({
         <p className="text-sm text-muted-foreground">You can&apos;t approve your own request — an owner, admin, or your department manager will decide.</p>
       ) : null}
 
-      <RequestActions orgSlug={org.slug} requestId={r.id} canDecide={canDecide} canCancel={canCancel} canConvert={canConvert} status={r.status} />
+      <RequestActions orgSlug={org.slug} base={base} requestId={r.id} canDecide={canDecide} canCancel={canCancel} canConvert={canConvert} isAuthor={isAuthor} status={r.status} />
     </div>
   );
 }

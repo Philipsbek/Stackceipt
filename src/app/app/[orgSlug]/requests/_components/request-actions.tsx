@@ -1,13 +1,15 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowRightLeft, Check, Loader2, RotateCcw, X } from "lucide-react";
+import { ArrowRightLeft, Check, Loader2, Pencil, RotateCcw, Send, X } from "lucide-react";
 import {
   cancelRequestAction,
   convertRequestAction,
   decideRequestAction,
+  submitRequestAction,
 } from "@/lib/actions/requests";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
@@ -24,14 +26,16 @@ import {
 
 interface Props {
   orgSlug: string;
+  base: string;
   requestId: string;
   canDecide: boolean;
   canCancel: boolean;
   canConvert: boolean;
+  isAuthor: boolean;
   status: string;
 }
 
-export function RequestActions({ orgSlug, requestId, canDecide, canCancel, canConvert, status }: Props) {
+export function RequestActions({ orgSlug, base, requestId, canDecide, canCancel, canConvert, isAuthor, status }: Props) {
   const router = useRouter();
   const [denyOpen, setDenyOpen] = React.useState(false);
   const [approveOpen, setApproveOpen] = React.useState(false);
@@ -124,11 +128,25 @@ export function RequestActions({ orgSlug, requestId, canDecide, canCancel, canCo
     );
   }
 
-  if (status === "DRAFT" && canCancel) {
+  if (status === "DRAFT") {
     return (
-      <Button variant="ghost" disabled={busy} onClick={() => run(() => cancelRequestAction(orgSlug, requestId), "Draft discarded")}>
-        <RotateCcw className="size-4" /> Discard draft
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        {isAuthor ? (
+          <>
+            <Button disabled={busy} onClick={() => run(() => submitRequestAction(orgSlug, requestId), "Request submitted")}>
+              {busy ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />} Submit request
+            </Button>
+            <Button asChild variant="outline">
+              <Link href={`${base}/requests/${requestId}/edit`}><Pencil className="size-4" /> Edit draft</Link>
+            </Button>
+          </>
+        ) : null}
+        {canCancel ? (
+          <Button variant="ghost" disabled={busy} onClick={() => run(() => cancelRequestAction(orgSlug, requestId), "Draft discarded")}>
+            <RotateCcw className="size-4" /> Discard draft
+          </Button>
+        ) : null}
+      </div>
     );
   }
 

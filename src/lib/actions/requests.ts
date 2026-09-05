@@ -232,3 +232,123 @@ export async function convertRequestAction(orgSlug: string, requestId: string): 
   // Land on the new subscription's edit page for a final review/adjust step.
   redirect(`/app/${orgSlug}/subscriptions/${subId}/edit`);
 }
+
+/** Author-only: edit a draft (save it as a draft again, or submit it). */
+export async function updateRequestAction(
+  orgSlug: string,
+  requestId: string,
+  input: RequestInput,
+  asDraft: boolean,
+): Promise<ActionResult> {
+  const parsed = requestInputSchema.safeParse(input);
+  if (!parsed.success && !asDraft) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  const data = parsed.success ? parsed.data : input;
+
+  const actor = await resolveActor(orgSlug);
+  if (!actor) return { error: "Not authorized" };
+  if (actor.isReadOnly) return { error: DEMO_READONLY_ERROR };
+  const { supabase, orgId, memberId, baseCurrency } = actor;
+
+  const { data: existing } = await supabase
+    .from("subscription_requests")
+    .select("id, status, requested_by_member_id")
+    .eq("organization_id", orgId)
+    .eq("id", requestId)
+    .maybeSingle();
+  if (!existing) return { error: "Request not found." };
+  if (existing.requested_by_member_id !== memberId) return { error: "Only the requester can edit this draft." };
+  if (existing.status !== "DRAFT") return { error: "Only drafts can be edited." };
+
+  const status = asDraft ? "DRAFT" : "SUBMITTED";
+  const departmentId = data.departmentId || null;
+  const amountMinor = Number.isFinite(toMinor(data.amountMajor)) ? toMinor(data.amountMajor) : 0;
+
+  const { error } = await supabase
+    .from("subscription_requests")
+    .update({
+      department_id: departmentId,
+      vendor_name: (data.vendorName || "").trim() || "Untitled",
+      product_name: (data.productName || "").trim() || "Untitled",
+      business_justification: (data.businessJustification || "").trim() || "(draft)",
+      requested_seats: data.requestedSeats ?? null,
+      amount_minor: amountMinor,
+      currency: (data.currency || baseCurrency).toUpperCase(),
+      billing_cadence: data.billingCadence || "MONTHLY",
+      billing_interval_months: data.billingIntervalMonths ?? null,
+      needed_by: data.neededBy || null,
+      status,
+    })
+    .eq("organization_id", orgId)
+    .eq("id", requestId)
+    .eq("status", "DRAFT");
+  if (error) return { error: friendly(error.message) };
+
+  await appendAudit(supabase, orgId, `request.${asDraft ? "drafted" : "submitted"}`, "subscription_request", requestId, null, { status }, { vendor: data.vendorName });
+
+  if (!asDraft) {
+    const approvers = (await approverMemberIds(supabase, orgId, departmentId)).filter((id) => id !== memberId);
+    await notify(supabase, orgId, approvers, {
+      type: "REQUEST_SUBMITTED",
+      title: "New request awaiting your decision",
+      body: `${data.vendorName} ${data.productName} was requested.`,
+      href: `/app/${orgSlug}/requests/${requestId}`,
+      entityType: "request",
+      entityId: requestId,
+    });
+  }
+  revalidatePath(`/app/${orgSlug}/requests/${requestId}`);
+  revalidatePath(`/app/${orgSlug}/requests`);
+  return { ok: true, id: requestId };
+}
+
+/** Author-only: submit an existing draft as-is (re-validates the stored content). */
+export async function submitRequestAction(orgSlug: string, requestId: string): Promise<ActionResult> {
+  const actor = await resolveActor(orgSlug);
+  if (!actor) return { error: "Not authorized" };
+  if (actor.isReadOnly) return { error: DEMO_READONLY_ERROR };
+  const { supabase, orgId, memberId } = actor;
+
+  const { data: req } = await supabase
+    .from("subscription_requests")
+    .select("id, status, requested_by_member_id, department_id, vendor_name, product_name, business_justification, amount_minor")
+    .eq("organization_id", orgId)
+    .eq("id", requestId)
+    .maybeSingle();
+  if (!req) return { error: "Request not found." };
+  if (req.requested_by_member_id !== memberId) return { error: "Only the requester can submit this draft." };
+  if (req.status !== "DRAFT") return { error: "This request has already been submitted." };
+
+  // Block placeholder / incomplete drafts.
+  const incomplete =
+    !req.vendor_name || req.vendor_name === "Untitled" ||
+    !req.product_name || req.product_name === "Untitled" ||
+    !req.business_justification || req.business_justification === "(draft)" ||
+    Number(req.amount_minor) <= 0;
+  if (incomplete) return { error: "Add the required details before submitting — edit the draft first." };
+
+  const { data: updated, error } = await supabase
+    .from("subscription_requests")
+    .update({ status: "SUBMITTED" })
+    .eq("organization_id", orgId)
+    .eq("id", requestId)
+    .eq("status", "DRAFT")
+    .select("id");
+  if (error) return { error: friendly(error.message) };
+  if (!updated || updated.length === 0) return { error: "This draft could not be submitted." };
+
+  await appendAudit(supabase, orgId, "request.submitted", "subscription_request", requestId, { status: "DRAFT" }, { status: "SUBMITTED" }, { vendor: req.vendor_name });
+  const approvers = (await approverMemberIds(supabase, orgId, req.department_id)).filter((id) => id !== memberId);
+  await notify(supabase, orgId, approvers, {
+    type: "REQUEST_SUBMITTED",
+    title: "New request awaiting your decision",
+    body: `${req.vendor_name} ${req.product_name} was requested.`,
+    href: `/app/${orgSlug}/requests/${requestId}`,
+    entityType: "request",
+    entityId: requestId,
+  });
+  revalidatePath(`/app/${orgSlug}/requests/${requestId}`);
+  revalidatePath(`/app/${orgSlug}/requests`);
+  return { ok: true, id: requestId };
+}

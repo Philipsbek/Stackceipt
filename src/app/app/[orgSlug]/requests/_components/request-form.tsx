@@ -12,23 +12,41 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createRequestAction } from "@/lib/actions/requests";
+import { createRequestAction, updateRequestAction } from "@/lib/actions/requests";
 
-const NONE = "__none__";
+export const NONE = "__none__";
+
+export type RequestFormValues = {
+  vendorName: string;
+  productName: string;
+  businessJustification: string;
+  departmentId: string;
+  requestedSeats: string;
+  amountMajor: string;
+  currency: string;
+  billingCadence: string;
+  billingIntervalMonths: string;
+  neededBy: string;
+};
 
 export function RequestForm({
   base,
   orgSlug,
   baseCurrency,
   departments,
+  requestId,
+  initial,
 }: {
   base: string;
   orgSlug: string;
   baseCurrency: string;
   departments: { id: string; name: string }[];
+  /** When set, the form edits this existing draft instead of creating a new request. */
+  requestId?: string;
+  initial?: Partial<RequestFormValues>;
 }) {
   const router = useRouter();
-  const [f, setF] = React.useState({
+  const [f, setF] = React.useState<RequestFormValues>({
     vendorName: "",
     productName: "",
     businessJustification: "",
@@ -39,6 +57,7 @@ export function RequestForm({
     billingCadence: "MONTHLY",
     billingIntervalMonths: "",
     neededBy: "",
+    ...initial,
   });
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [submitting, setSubmitting] = React.useState(false);
@@ -77,7 +96,9 @@ export function RequestForm({
     }
     setErrors({});
     setSubmitting(true);
-    const result = await createRequestAction(orgSlug, input, asDraft);
+    const result = requestId
+      ? await updateRequestAction(orgSlug, requestId, input, asDraft)
+      : await createRequestAction(orgSlug, input, asDraft);
     setSubmitting(false);
     if (result.error) {
       toast.error(result.error);
