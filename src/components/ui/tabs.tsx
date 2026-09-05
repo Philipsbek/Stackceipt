@@ -13,7 +13,10 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-9 items-center justify-center gap-1 rounded-lg bg-secondary p-1 text-muted-foreground",
+      // Caps at the parent width and scrolls horizontally (swipeable on mobile)
+      // when the triggers don't fit, instead of overflowing the page. The
+      // scrollbar is hidden; when the tabs fit, nothing scrolls.
+      "inline-flex h-9 max-w-full items-center justify-start gap-1 overflow-x-auto rounded-lg bg-secondary p-1 text-muted-foreground [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
       className,
     )}
     {...props}
