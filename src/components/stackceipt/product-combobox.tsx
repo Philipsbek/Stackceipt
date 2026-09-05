@@ -80,7 +80,7 @@ export function ProductCombobox({ value, onSelect, onCustom }: Props) {
         <div className="absolute z-50 mt-2 w-full min-w-[280px] overflow-hidden rounded-xl border border-border bg-popover shadow-[0_12px_36px_-16px_rgba(0,0,0,0.35)]">
           <div className="flex items-center gap-2 border-b border-border px-3">
             <Search className="size-4 text-muted-foreground" />
-            <input ref={inputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products…" className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+            <input ref={inputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search products…" className="h-10 w-full bg-transparent text-base outline-none placeholder:text-muted-foreground sm:text-sm" />
           </div>
           <div role="listbox" className="max-h-72 overflow-y-auto p-1.5">
             {results.map((product) => (

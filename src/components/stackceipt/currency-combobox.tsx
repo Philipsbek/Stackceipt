@@ -81,7 +81,7 @@ export function CurrencyCombobox({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search currency or code…"
-              className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="h-10 w-full bg-transparent text-base outline-none placeholder:text-muted-foreground sm:text-sm"
               aria-label="Search currencies"
             />
           </div>

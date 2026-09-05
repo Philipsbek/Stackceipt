@@ -177,7 +177,8 @@ export function ChatBot() {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask a question…"
                 aria-label="Ask the assistant a question"
-                className="h-9 flex-1 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                // 16px on mobile so iOS Safari doesn't zoom the page on focus.
+                className="h-9 flex-1 rounded-lg border border-border bg-background px-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:text-sm"
               />
               <Button type="submit" size="icon" className="size-9 shrink-0" aria-label="Send" disabled={thinking || !input.trim()}>
                 <Send className="size-4" />
