@@ -56,8 +56,8 @@ export default async function DashboardPage({
         }
       />
 
-      {/* Primary financial metrics */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {/* Key metrics — one grid so every card is the same size with even gaps */}
+      <div className="grid auto-rows-fr grid-cols-2 gap-4 lg:grid-cols-4">
         <MetricCard
           label="Monthly recurring"
           emphasis
@@ -77,10 +77,6 @@ export default async function DashboardPage({
           value={data.renewalsInWindow.length}
           href={`${base}/renewals`}
         />
-      </div>
-
-      {/* Attention row */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <MetricCard label="Open requests" value={data.openRequests} href={`${base}/requests`} hint="Awaiting a decision" />
         <MetricCard label="Reviews due" value={data.reviewsDue} href={`${base}/reviews`} hint="Scheduled or in progress" />
         <MetricCard label="Janitor findings" value={data.openFindings} href={`${base}/janitor`} hint="Unresolved" />

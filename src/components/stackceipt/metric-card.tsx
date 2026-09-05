@@ -25,7 +25,7 @@ export function MetricCard({ label, value, hint, tooltip, href, className, empha
   const body = (
     <Card
       className={cn(
-        "p-5 transition-colors",
+        "h-full p-5 transition-colors",
         href && "hover:border-[#d4d4d4]",
         className,
       )}
@@ -56,7 +56,7 @@ export function MetricCard({ label, value, hint, tooltip, href, className, empha
 
   if (href) {
     return (
-      <Link href={href} className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+      <Link href={href} className="block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
         {body}
       </Link>
     );
