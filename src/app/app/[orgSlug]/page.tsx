@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, Plus, TrendingUp, TrendingDown } from "lucide-react";
 import { getOrgContext } from "@/lib/data/access";
-import { getDashboardData } from "@/lib/data/dashboard";
+import { getDashboardData, type TrendPoint } from "@/lib/data/dashboard";
 import { can } from "@/lib/domain/permissions";
 import { formatDate, todayInTimezone, urgencyBucket } from "@/lib/domain/dates";
+import { formatMoney } from "@/lib/domain/money";
 import { cadenceSuffix } from "@/lib/domain/enums";
 import { buildCategoryColorMap, categoryColor } from "@/lib/domain/category-colors";
 import { PageHeader } from "@/components/stackceipt/page-header";
@@ -83,6 +84,35 @@ export default async function DashboardPage({
         <MetricCard label="Offboarding tasks" value={data.openOffboardingTasks} href={`${base}/offboarding`} hint="Still open" />
       </div>
 
+      {/* Monthly recurring spend trend */}
+      <Card>
+        <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
+          <div>
+            <CardTitle>Monthly recurring trend</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Committed monthly cost over the last {data.monthlyTrend.length} months.
+            </p>
+          </div>
+          {data.monthlyTrendChangePct !== null ? (
+            <span
+              className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${
+                data.monthlyTrendChangePct >= 0
+                  ? "border-border text-muted-foreground"
+                  : "border-[color:var(--success-border)] text-[color:var(--success)]"
+              }`}
+              title="Change vs. the previous month"
+            >
+              {data.monthlyTrendChangePct >= 0 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
+              {data.monthlyTrendChangePct >= 0 ? "+" : ""}
+              {data.monthlyTrendChangePct}%
+            </span>
+          ) : null}
+        </CardHeader>
+        <CardContent>
+          <SpendTrend points={data.monthlyTrend} currency={data.currency} />
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Upcoming renewals */}
         <Card className="lg:col-span-2">
@@ -151,6 +181,48 @@ export default async function DashboardPage({
           <CategoryBreakdown items={data.byCategory} currency={data.currency} colors={categoryColors} />
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function SpendTrend({ points, currency }: { points: TrendPoint[]; currency: string }) {
+  const max = Math.max(1, ...points.map((p) => p.minor));
+  const current = points.length ? points[points.length - 1]!.minor : 0;
+  const allZero = points.every((p) => p.minor === 0);
+
+  if (points.length === 0 || allZero) {
+    return <p className="text-sm text-muted-foreground">No recurring spend history yet.</p>;
+  }
+
+  return (
+    <div>
+      <div className="mb-4 text-3xl font-semibold tabular-nums tracking-tight">
+        <Money minor={current} currency={currency} showCents={false} />
+      </div>
+      {/* Bars: height encodes each month's committed monthly cost; bars darken
+          toward the current month. */}
+      <div className="flex h-28 items-end gap-1.5 sm:gap-2.5">
+        {points.map((p, i) => {
+          const heightPct = p.minor > 0 ? Math.max((p.minor / max) * 100, 6) : 2;
+          const lightness = 80 - (i / Math.max(points.length - 1, 1)) * 60; // 80% → 20%
+          return (
+            <div key={p.month} className="flex h-full flex-1 items-end">
+              <div
+                className="w-full rounded-t-md"
+                style={{ height: `${heightPct}%`, backgroundColor: `hsl(0 0% ${lightness}%)` }}
+                title={`${p.label}: ${formatMoney(p.minor, currency, { showCents: false })}`}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex gap-1.5 sm:gap-2.5">
+        {points.map((p) => (
+          <div key={p.month} className="flex-1 text-center text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            {p.label}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
