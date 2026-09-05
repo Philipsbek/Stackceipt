@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TaskItem } from "./_components/task-item";
+import { CompleteCaseButton } from "./_components/complete-case-button";
 
 export default async function OffboardingCaseDetailPage({
   params,
@@ -64,6 +65,8 @@ export default async function OffboardingCaseDetailPage({
             {c.tasks.map((t) => (
               <TaskItem
                 key={t.id}
+                orgSlug={org.slug}
+                taskId={t.id}
                 title={t.title}
                 description={t.description}
                 assignee={t.assignedToMemberId ? nameFromMembers(members, t.assignedToMemberId) : null}
@@ -77,11 +80,9 @@ export default async function OffboardingCaseDetailPage({
         </CardContent>
       </Card>
 
-      {canManage ? (
+      {canManage && c.status !== "COMPLETED" ? (
         <div className="flex justify-end">
-          <Button disabled={!allDone} variant={allDone ? "default" : "outline"}>
-            {allDone ? "Complete offboarding" : "Complete all tasks first"}
-          </Button>
+          <CompleteCaseButton orgSlug={org.slug} caseId={c.id} allDone={allDone} />
         </div>
       ) : null}
     </div>

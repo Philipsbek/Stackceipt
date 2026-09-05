@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { resolveFindingAction, dismissFindingAction } from "@/lib/actions/janitor";
 
 export function RunJanitorButton() {
   const router = useRouter();
@@ -42,13 +43,34 @@ export function RunJanitorButton() {
   );
 }
 
-export function FindingActions({ title }: { title: string }) {
+export function FindingActions({ orgSlug, fingerprint, title }: { orgSlug: string; fingerprint: string; title: string }) {
   const router = useRouter();
   const [dismissOpen, setDismissOpen] = React.useState(false);
   const [reason, setReason] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
 
-  function resolve() {
-    toast.success("Finding resolved (demo)", { description: `"${title}" marked resolved.` });
+  async function resolve() {
+    setBusy(true);
+    const result = await resolveFindingAction(orgSlug, fingerprint);
+    setBusy(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Finding resolved", { description: `"${title}" marked resolved.` });
+    router.refresh();
+  }
+
+  async function dismiss() {
+    setBusy(true);
+    const result = await dismissFindingAction(orgSlug, fingerprint, reason);
+    setBusy(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    setDismissOpen(false);
+    toast.success("Finding dismissed");
     router.refresh();
   }
 
@@ -56,7 +78,7 @@ export function FindingActions({ title }: { title: string }) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Finding actions">
+          <Button variant="ghost" size="icon" aria-label="Finding actions" disabled={busy}>
             <MoreHorizontal className="size-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -77,17 +99,8 @@ export function FindingActions({ title }: { title: string }) {
             <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Why is this not actionable?" />
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setDismissOpen(false)}>Cancel</Button>
-            <Button
-              disabled={reason.trim().length < 3}
-              onClick={() => {
-                setDismissOpen(false);
-                toast.success("Finding dismissed (demo)");
-                router.refresh();
-              }}
-            >
-              Dismiss
-            </Button>
+            <Button variant="ghost" onClick={() => setDismissOpen(false)} disabled={busy}>Cancel</Button>
+            <Button disabled={busy || reason.trim().length < 3} onClick={dismiss}>Dismiss</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

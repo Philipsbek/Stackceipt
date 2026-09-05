@@ -84,7 +84,7 @@ export default async function JanitorPage({ params }: { params: Promise<{ orgSlu
                     ) : null}
                   </div>
                 </div>
-                {can(actor, "janitor.resolve") ? <FindingActions title={f.title} /> : null}
+                {can(actor, "janitor.resolve") ? <FindingActions orgSlug={org.slug} fingerprint={f.fingerprint} title={f.title} /> : null}
               </div>
             </Card>
           ))}

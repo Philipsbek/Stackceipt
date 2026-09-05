@@ -14,8 +14,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { completeTaskAction } from "@/lib/actions/offboarding";
 
 interface Props {
+  orgSlug: string;
+  taskId: string;
   title: string;
   description: string | null;
   assignee: string | null;
@@ -25,15 +28,23 @@ interface Props {
   canComplete: boolean;
 }
 
-export function TaskItem({ title, description, assignee, dueDate, status, isSubscriptionTask, canComplete }: Props) {
+export function TaskItem({ orgSlug, taskId, title, description, assignee, dueDate, status, isSubscriptionTask, canComplete }: Props) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
   const done = status === "COMPLETED";
 
-  function complete() {
+  async function complete() {
+    setBusy(true);
+    const result = await completeTaskAction(orgSlug, taskId);
+    setBusy(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
     setOpen(false);
-    toast.success("Task completed (demo)", {
-      description: isSubscriptionTask ? "The member's seat assignment is removed in the same transaction." : undefined,
+    toast.success("Task completed", {
+      description: isSubscriptionTask ? "The member's seat assignment was released in Stackceipt." : undefined,
     });
     router.refresh();
   }
@@ -58,7 +69,7 @@ export function TaskItem({ title, description, assignee, dueDate, status, isSubs
       ) : canComplete ? (
         isSubscriptionTask ? (
           <>
-            <Button size="sm" variant="outline" onClick={() => setOpen(true)}>Complete</Button>
+            <Button size="sm" variant="outline" onClick={() => setOpen(true)} disabled={busy}>Complete</Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogContent>
                 <DialogHeader>
@@ -69,14 +80,14 @@ export function TaskItem({ title, description, assignee, dueDate, status, isSubs
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                  <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-                  <Button onClick={complete}>Complete & unassign</Button>
+                  <Button variant="ghost" onClick={() => setOpen(false)} disabled={busy}>Cancel</Button>
+                  <Button onClick={complete} disabled={busy}>Complete &amp; unassign</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
           </>
         ) : (
-          <Button size="sm" variant="outline" onClick={complete}>Complete</Button>
+          <Button size="sm" variant="outline" onClick={complete} disabled={busy}>Complete</Button>
         )
       ) : null}
     </li>

@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isDemoEmail } from "@/lib/data/access";
 import type { NotificationType, OrganizationRole } from "@/lib/domain/enums";
 
-type Supa = Awaited<ReturnType<typeof createClient>>;
+export type Supa = Awaited<ReturnType<typeof createClient>>;
 
 export interface ActorCtx {
   supabase: Supa;

@@ -10,11 +10,12 @@ import type {
 } from "@/lib/domain/types";
 
 /**
- * DEMO/V1: findings are computed live from current data on each request, which shows the
- * deterministic engine truthfully. A future scan RPC can upsert these into
- * janitor_findings by fingerprint; the UI already reads the JanitorFinding shape.
+ * Compute every finding the deterministic engine currently produces from live
+ * data (unfiltered). The `id` is the fingerprint, which encodes the underlying
+ * state — so a finding that is later resolved/dismissed and then recurs after
+ * the data changes gets a new fingerprint and reappears.
  */
-export async function listFindings(org: Organization): Promise<JanitorFinding[]> {
+export async function computeFindings(org: Organization): Promise<JanitorFinding[]> {
   const supabase = await createClient();
 
   const [{ data: subs }, { data: assigns }, { data: reviews }] = await Promise.all([
@@ -34,6 +35,24 @@ export async function listFindings(org: Organization): Promise<JanitorFinding[]>
   });
 
   return candidates.map((c) => candidateToFinding(c, today));
+}
+
+/**
+ * The open findings shown in the UI: computed candidates minus any that have
+ * been persisted as RESOLVED or DISMISSED (matched by fingerprint).
+ */
+export async function listFindings(org: Organization): Promise<JanitorFinding[]> {
+  const supabase = await createClient();
+  const [candidates, { data: persisted }] = await Promise.all([
+    computeFindings(org),
+    supabase
+      .from("janitor_findings")
+      .select("fingerprint, status")
+      .eq("organization_id", org.id)
+      .in("status", ["RESOLVED", "DISMISSED"]),
+  ]);
+  const hidden = new Set((persisted ?? []).map((r: { fingerprint: string }) => r.fingerprint));
+  return candidates.filter((f) => !hidden.has(f.fingerprint));
 }
 
 function candidateToFinding(c: JanitorCandidate, today: string): JanitorFinding {

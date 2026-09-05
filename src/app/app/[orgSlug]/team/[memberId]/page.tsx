@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { RoleBadge, MembershipStatusBadge } from "@/components/stackceipt/status-badge";
 import { EmptyState } from "@/components/stackceipt/states";
+import { MemberManage } from "../_components/member-manage";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -112,12 +113,14 @@ export default async function MemberDetailPage({
       {(canManage || canOffboard) ? (
         <Card>
           <CardHeader><CardTitle>Manage</CardTitle></CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            {canManage ? <Button variant="outline" disabled>Change role</Button> : null}
-            {canManage && member.status === "ACTIVE" ? <Button variant="outline" disabled>Suspend</Button> : null}
-            {canOffboard && !hasOpenOffboarding ? (
-              <Button asChild variant="outline"><Link href={`${base}/offboarding`}>Start offboarding</Link></Button>
-            ) : null}
+          <CardContent>
+            <MemberManage
+              orgSlug={org.slug}
+              member={{ id: member.id, fullName: member.fullName, role: member.role, status: member.status }}
+              canManage={canManage}
+              canOffboard={canOffboard}
+              hasOpenOffboarding={hasOpenOffboarding}
+            />
           </CardContent>
         </Card>
       ) : null}
