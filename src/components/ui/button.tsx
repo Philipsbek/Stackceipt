@@ -1,8 +1,10 @@
 import * as React from "react";
+import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NavPending } from "./nav-pending";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -47,9 +49,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // <button>s. asChild buttons (usually links) get feedback from the global
     // route progress bar instead.
     if (asChild) {
+      // For link buttons, append a navigation spinner inside the <Link> so the
+      // button itself shows a pending state while the next page loads.
+      let content: React.ReactNode = children;
+      if (React.isValidElement(children) && children.type === Link) {
+        const el = children as React.ReactElement<{ children?: React.ReactNode }>;
+        content = React.cloneElement(el, undefined, el.props.children, <NavPending key="nav-pending" />);
+      }
       return (
         <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props}>
-          {children}
+          {content}
         </Comp>
       );
     }

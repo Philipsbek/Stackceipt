@@ -74,6 +74,21 @@ export function RouteProgress() {
     return () => document.removeEventListener("click", onClick);
   }, [start]);
 
+  // Also start on programmatic navigations (router.push), which don't emit a
+  // click — patch history.pushState to catch them.
+  React.useEffect(() => {
+    const original = window.history.pushState;
+    window.history.pushState = function (this: History, ...args: Parameters<History["pushState"]>) {
+      const url = args[2];
+      const nextPath = url ? new URL(url, window.location.origin).pathname : null;
+      if (nextPath && nextPath !== window.location.pathname) start();
+      return original.apply(this, args);
+    };
+    return () => {
+      window.history.pushState = original;
+    };
+  }, [start]);
+
   // Complete the bar once the route actually changes.
   React.useEffect(() => {
     if (firstRender.current) {
