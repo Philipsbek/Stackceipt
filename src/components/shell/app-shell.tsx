@@ -147,7 +147,10 @@ export function AppShell({ org, orgs, user, navItems, unreadCount, notifications
           </DropdownMenu>
         </header>
 
-        <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">{children}</main>
+        {/* Extra bottom padding on mobile/tablet so page content (e.g. a form's
+            action bar) clears the floating "Ask" button in the corner. On lg+ the
+            content column is centered and the button sits in the margin. */}
+        <main className="mx-auto max-w-6xl px-4 pt-6 pb-24 sm:px-6 lg:pt-8 lg:pb-10">{children}</main>
       </div>
     </div>
   );
