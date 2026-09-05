@@ -3,8 +3,8 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CalendarPlus, Loader2 } from "lucide-react";
-import { scheduleReviewAction, completeReviewAction } from "@/lib/actions/reviews";
+import { CalendarPlus, Loader2, X } from "lucide-react";
+import { scheduleReviewAction, completeReviewAction, cancelReviewAction } from "@/lib/actions/reviews";
 import { REVIEW_DECISIONS, REVIEW_DECISION_LABELS, type ReviewDecision } from "@/lib/domain/enums";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
@@ -104,6 +104,27 @@ export function ScheduleReviewDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function CancelReviewButton({ orgSlug, reviewId }: { orgSlug: string; reviewId: string }) {
+  const router = useRouter();
+  const [busy, setBusy] = React.useState(false);
+  async function cancel() {
+    setBusy(true);
+    const result = await cancelReviewAction(orgSlug, reviewId);
+    setBusy(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Review cancelled");
+    router.refresh();
+  }
+  return (
+    <Button size="sm" variant="ghost" onClick={cancel} disabled={busy} aria-label="Cancel review" title="Cancel review" className="text-muted-foreground">
+      {busy ? <Loader2 className="size-4 animate-spin" /> : <X className="size-4" />}
+    </Button>
   );
 }
 

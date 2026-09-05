@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   CalendarClock,
   ExternalLink,
-  FileText,
   Pencil,
   ShieldAlert,
   Users,
@@ -13,6 +12,8 @@ import { getOrgContext, nameFromMembers } from "@/lib/data/access";
 import { assignmentsFor, getSubscription } from "@/lib/data/subscriptions";
 import { listFindings } from "@/lib/data/janitor";
 import { listAuditLogs, listReviews } from "@/lib/data/collections";
+import { listDocuments } from "@/lib/data/documents";
+import { DocumentList, DocumentUploader } from "../_components/documents-panel";
 import { can } from "@/lib/domain/permissions";
 import { formatDate, relativeDays, daysUntil, todayInTimezone } from "@/lib/domain/dates";
 import { BILLING_CADENCE_LABELS } from "@/lib/domain/enums";
@@ -46,11 +47,12 @@ export default async function SubscriptionDetailPage({
   if (!s) notFound();
 
   const canReadAudit = can(actor, "audit.read");
-  const [assignmentsRaw, allFindings, allReviews, auditAll] = await Promise.all([
+  const [assignmentsRaw, allFindings, allReviews, auditAll, documents] = await Promise.all([
     assignmentsFor(org.id, s.id),
     listFindings(org),
     listReviews(org.id, members),
     canReadAudit ? listAuditLogs(org.id) : Promise.resolve([]),
+    listDocuments(org.id, s.id),
   ]);
   const assignments = assignmentsRaw.filter((a) => !a.unassignedAt);
   const findings = allFindings.filter((f) => f.subscriptionId === s.id);
@@ -293,13 +295,14 @@ export default async function SubscriptionDetailPage({
 
           {/* Documents */}
           <Card>
-            <CardHeader><CardTitle>Documents</CardTitle></CardHeader>
+            <CardHeader className="flex-row items-center justify-between">
+              <CardTitle>Documents</CardTitle>
+              {canEdit ? <DocumentUploader orgSlug={org.slug} subscriptionId={s.id} /> : null}
+            </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <FileText className="size-4" /> No documents uploaded.
-              </div>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Private documents live in an access-controlled bucket with short-lived signed URLs (wired with Supabase).
+              <DocumentList orgSlug={org.slug} documents={documents} canManage={canEdit} />
+              <p className="mt-3 text-xs text-muted-foreground">
+                Private files in an access-controlled bucket, served via short-lived signed URLs. 25 MB max.
               </p>
             </CardContent>
           </Card>

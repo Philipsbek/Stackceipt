@@ -4,16 +4,14 @@ import { can } from "@/lib/domain/permissions";
 import { PageHeader } from "@/components/stackceipt/page-header";
 import { PermissionNotice } from "@/components/stackceipt/states";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { GeneralSettingsForm, TransferOwnershipControl, DeleteOrgControl } from "./_components/settings-form";
 
 export default async function SettingsPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
   const ctx = await getOrgContext(orgSlug);
   if (!ctx) notFound();
-  const { org, actor } = ctx;
+  const { org, actor, members } = ctx;
 
   if (!can(actor, "organization.update")) {
     return <PermissionNotice description="Organization settings are managed by owners and admins." />;
@@ -27,31 +25,11 @@ export default async function SettingsPage({ params }: { params: Promise<{ orgSl
 
       <Card>
         <CardHeader><CardTitle>General</CardTitle></CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label className="mb-1.5">Organization name</Label>
-            <Input defaultValue={org.name} />
-          </div>
-          <div>
-            <Label className="mb-1.5">Slug</Label>
-            <Input defaultValue={org.slug} />
-          </div>
-          <div>
-            <Label className="mb-1.5">Base currency</Label>
-            <Input defaultValue={org.baseCurrency} maxLength={3} />
-            <p className="mt-1 text-xs text-muted-foreground">V1 is single-currency. All subscriptions use this currency.</p>
-          </div>
-          <div>
-            <Label className="mb-1.5">Timezone</Label>
-            <Input defaultValue={org.timezone} />
-          </div>
-          <div>
-            <Label className="mb-1.5">Renewal window (days)</Label>
-            <Input type="number" defaultValue={org.renewalWindowDays} />
-          </div>
-          <div className="sm:col-span-2">
-            <Button disabled>Save changes</Button>
-          </div>
+        <CardContent>
+          <GeneralSettingsForm
+            orgSlug={org.slug}
+            org={{ slug: org.slug, name: org.name, baseCurrency: org.baseCurrency, timezone: org.timezone, renewalWindowDays: org.renewalWindowDays }}
+          />
         </CardContent>
       </Card>
 
@@ -62,9 +40,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ orgSl
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="text-sm font-medium">Transfer ownership</div>
-                <p className="text-sm text-muted-foreground">Make another owner. There is always exactly one owner.</p>
+                <p className="text-sm text-muted-foreground">Make another member the owner. There is always exactly one owner.</p>
               </div>
-              <Button variant="outline" disabled>Transfer…</Button>
+              <TransferOwnershipControl orgSlug={org.slug} members={members} />
             </div>
             <Separator />
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -72,7 +50,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ orgSl
                 <div className="text-sm font-medium text-destructive">Delete organization</div>
                 <p className="text-sm text-muted-foreground">Permanently remove this organization and all its data.</p>
               </div>
-              <Button variant="destructive" disabled>Delete…</Button>
+              <DeleteOrgControl orgSlug={org.slug} orgName={org.name} />
             </div>
           </CardContent>
         </Card>

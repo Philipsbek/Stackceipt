@@ -77,6 +77,48 @@ export async function changeMemberRoleAction(orgSlug: string, memberId: string, 
   return { ok: true };
 }
 
+export async function removeMemberAction(orgSlug: string, memberId: string): Promise<ActionResult> {
+  const actor = await resolveActor(orgSlug);
+  if (!actor) return { error: "Not authorized" };
+  if (actor.isReadOnly) return { error: DEMO_READONLY_ERROR };
+  if (actor.role !== "OWNER" && actor.role !== "ADMIN") return { error: "Only owners and admins can remove members." };
+  const { supabase, orgId, memberId: actorMemberId } = actor;
+
+  if (memberId === actorMemberId) return { error: "You can't remove yourself." };
+
+  const { data: target } = await supabase
+    .from("organization_members")
+    .select("id, role, status, full_name")
+    .eq("organization_id", orgId)
+    .eq("id", memberId)
+    .maybeSingle();
+  if (!target) return { error: "Member not found" };
+  if (target.status === "REMOVED") return { error: "That member is already removed." };
+  if (target.role === "OWNER") return { error: "You can't remove the owner. Transfer ownership first." };
+
+  // Soft-remove: keep history and references intact.
+  const { data: updated, error } = await supabase
+    .from("organization_members")
+    .update({ status: "REMOVED" })
+    .eq("organization_id", orgId)
+    .eq("id", memberId)
+    .select("id");
+  if (error) return { error: friendly(error.message) };
+  if (!updated || updated.length === 0) return { error: "Couldn't remove that member." };
+
+  await appendAudit(supabase, orgId, "member.removed", "organization_member", memberId, { status: target.status }, { status: "REMOVED" }, {});
+  await announce(supabase, orgId, {
+    title: "Member removed",
+    body: `${target.full_name} was removed from the organization.`,
+    href: `/app/${orgSlug}/team`,
+    entityType: "member",
+    entityId: memberId,
+  });
+  revalidatePath(`/app/${orgSlug}/team`);
+  revalidatePath(`/app/${orgSlug}`, "layout");
+  return { ok: true };
+}
+
 export async function setMemberSuspendedAction(orgSlug: string, memberId: string, suspend: boolean): Promise<ActionResult> {
   const actor = await resolveActor(orgSlug);
   if (!actor) return { error: "Not authorized" };

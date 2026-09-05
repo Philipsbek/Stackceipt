@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TaskItem } from "./_components/task-item";
 import { CompleteCaseButton } from "./_components/complete-case-button";
+import { AddTaskForm } from "./_components/add-task-form";
 
 export default async function OffboardingCaseDetailPage({
   params,
@@ -74,9 +75,15 @@ export default async function OffboardingCaseDetailPage({
                 status={t.status}
                 isSubscriptionTask={Boolean(t.subscriptionId)}
                 canComplete={canComplete || canManage}
+                canCancel={canManage}
               />
             ))}
           </ul>
+          {canManage && c.status !== "COMPLETED" && c.status !== "CANCELLED" ? (
+            <div className="border-t border-border">
+              <AddTaskForm orgSlug={org.slug} caseId={c.id} />
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 

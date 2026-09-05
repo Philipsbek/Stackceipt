@@ -73,6 +73,40 @@ export async function scheduleReviewAction(
   return { ok: true, id };
 }
 
+export async function cancelReviewAction(orgSlug: string, reviewId: string): Promise<ActionResult> {
+  const actor = await resolveActor(orgSlug);
+  if (!actor) return { error: "Not authorized" };
+  if (actor.isReadOnly) return { error: DEMO_READONLY_ERROR };
+  const { supabase, orgId, memberId, role } = actor;
+
+  const { data: rev } = await supabase
+    .from("subscription_reviews")
+    .select("id, status, assigned_to_member_id")
+    .eq("organization_id", orgId)
+    .eq("id", reviewId)
+    .maybeSingle();
+  if (!rev) return { error: "Review not found" };
+  if (rev.status === "COMPLETED" || rev.status === "CANCELLED") return { error: "This review is already closed." };
+  if (role !== "OWNER" && role !== "ADMIN" && rev.assigned_to_member_id !== memberId) {
+    return { error: "Only owners, admins, or the assignee can cancel this review." };
+  }
+
+  const { data: updated, error } = await supabase
+    .from("subscription_reviews")
+    .update({ status: "CANCELLED" })
+    .eq("organization_id", orgId)
+    .eq("id", reviewId)
+    .in("status", ["SCHEDULED", "IN_PROGRESS"])
+    .select("id");
+  if (error) return { error: friendly(error.message) };
+  if (!updated || updated.length === 0) return { error: "This review was already closed." };
+
+  await appendAudit(supabase, orgId, "review.cancelled", "subscription_review", reviewId, { status: rev.status }, { status: "CANCELLED" }, {});
+  revalidatePath(`/app/${orgSlug}/reviews`);
+  revalidatePath(`/app/${orgSlug}`, "layout");
+  return { ok: true };
+}
+
 export async function completeReviewAction(
   orgSlug: string,
   reviewId: string,

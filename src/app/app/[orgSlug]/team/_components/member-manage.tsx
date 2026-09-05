@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { changeMemberRoleAction, setMemberSuspendedAction } from "@/lib/actions/team";
+import { changeMemberRoleAction, setMemberSuspendedAction, removeMemberAction } from "@/lib/actions/team";
 import { createOffboardingCaseAction } from "@/lib/actions/offboarding";
 import { ORGANIZATION_ROLES, ROLE_LABELS, type OrganizationRole } from "@/lib/domain/enums";
 import { Button } from "@/components/ui/button";
@@ -37,8 +37,23 @@ export function MemberManage({ orgSlug, member, canManage, canOffboard, hasOpenO
   const [offboardOpen, setOffboardOpen] = React.useState(false);
   const [departureDate, setDepartureDate] = React.useState("");
   const [notes, setNotes] = React.useState("");
+  const [removeOpen, setRemoveOpen] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+
+  async function remove() {
+    setBusy(true);
+    setError(null);
+    const result = await removeMemberAction(orgSlug, member.id);
+    setBusy(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    toast.success("Member removed");
+    setRemoveOpen(false);
+    router.push(`/app/${orgSlug}/team`);
+  }
 
   async function saveRole() {
     setBusy(true);
@@ -149,6 +164,29 @@ export function MemberManage({ orgSlug, member, canManage, canOffboard, hasOpenO
               <Button variant="ghost" onClick={() => setOffboardOpen(false)} disabled={busy}>Cancel</Button>
               <Button onClick={startOffboarding} disabled={busy || !departureDate}>
                 {busy ? <Loader2 className="size-4 animate-spin" /> : null} Start
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      ) : null}
+
+      {canManage && member.status !== "REMOVED" ? (
+        <Dialog open={removeOpen} onOpenChange={(v) => { setRemoveOpen(v); if (!v) setError(null); }}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="text-destructive hover:text-destructive">Remove</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Remove {member.fullName}?</DialogTitle>
+              <DialogDescription>
+                They lose access to this organization. Their history is preserved, and you can re-invite them later.
+              </DialogDescription>
+            </DialogHeader>
+            {error ? <p className="rounded-md bg-[color:var(--danger-bg)] px-3 py-2 text-sm text-destructive">{error}</p> : null}
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setRemoveOpen(false)} disabled={busy}>Cancel</Button>
+              <Button variant="destructive" onClick={remove} disabled={busy}>
+                {busy ? <Loader2 className="size-4 animate-spin" /> : null} Remove member
               </Button>
             </DialogFooter>
           </DialogContent>

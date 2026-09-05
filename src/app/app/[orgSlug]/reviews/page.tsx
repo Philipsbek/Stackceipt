@@ -11,7 +11,7 @@ import { PermissionNotice, EmptyState } from "@/components/stackceipt/states";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ReviewStatusBadge } from "@/components/stackceipt/status-badge";
-import { ScheduleReviewDialog, CompleteReviewButton } from "./_components/reviews-client";
+import { ScheduleReviewDialog, CompleteReviewButton, CancelReviewButton } from "./_components/reviews-client";
 
 export default async function ReviewsPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
@@ -110,6 +110,7 @@ function ReviewLi({ base, orgSlug, r, today, showComplete }: { base: string; org
         {overdue ? <Badge variant="danger">Overdue {relativeDays(d)}</Badge> : d !== null && d <= 14 ? <Badge variant="warning">{relativeDays(d)}</Badge> : null}
         <ReviewStatusBadge status={r.status} />
         {showComplete ? <CompleteReviewButton orgSlug={orgSlug} reviewId={r.id} label={r.subscriptionLabel} /> : null}
+        {showComplete ? <CancelReviewButton orgSlug={orgSlug} reviewId={r.id} /> : null}
       </div>
     </li>
   );

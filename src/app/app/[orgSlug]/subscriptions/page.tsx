@@ -16,6 +16,7 @@ import {
 import { EmptyState } from "@/components/stackceipt/states";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SubscriptionsToolbar } from "./_components/toolbar";
+import { ImportDialog } from "./_components/import-dialog";
 import { ProductMark } from "@/components/stackceipt/product-mark";
 
 export default async function SubscriptionsPage({
@@ -55,11 +56,14 @@ export default async function SubscriptionsPage({
         description="Every tool your organization pays for, with its true annualized cost."
         actions={
           canCreate ? (
-            <Button asChild>
-              <Link href={`${base}/subscriptions/new`}>
-                <Plus className="size-4" /> Add subscription
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <ImportDialog orgSlug={org.slug} />
+              <Button asChild>
+                <Link href={`${base}/subscriptions/new`}>
+                  <Plus className="size-4" /> Add subscription
+                </Link>
+              </Button>
+            </div>
           ) : actor.isReadOnly ? (
             <span title="Adding subscriptions is disabled in the read-only demo">
               <Button disabled aria-disabled>

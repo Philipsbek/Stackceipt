@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { completeTaskAction } from "@/lib/actions/offboarding";
+import { completeTaskAction, cancelTaskAction } from "@/lib/actions/offboarding";
 
 interface Props {
   orgSlug: string;
@@ -26,13 +26,27 @@ interface Props {
   status: string;
   isSubscriptionTask: boolean;
   canComplete: boolean;
+  canCancel?: boolean;
 }
 
-export function TaskItem({ orgSlug, taskId, title, description, assignee, dueDate, status, isSubscriptionTask, canComplete }: Props) {
+export function TaskItem({ orgSlug, taskId, title, description, assignee, dueDate, status, isSubscriptionTask, canComplete, canCancel }: Props) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const done = status === "COMPLETED";
+  const cancelled = status === "CANCELLED";
+
+  async function cancel() {
+    setBusy(true);
+    const result = await cancelTaskAction(orgSlug, taskId);
+    setBusy(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Task cancelled");
+    router.refresh();
+  }
 
   async function complete() {
     setBusy(true);
@@ -56,7 +70,7 @@ export function TaskItem({ orgSlug, taskId, title, description, assignee, dueDat
           {done ? <Check className="size-3.5" /> : null}
         </span>
         <div>
-          <div className={`text-sm font-medium ${done ? "text-muted-foreground line-through" : ""}`}>{title}</div>
+          <div className={`text-sm font-medium ${done || cancelled ? "text-muted-foreground line-through" : ""}`}>{title}</div>
           {description ? <div className="text-xs text-muted-foreground">{description}</div> : null}
           <div className="mt-0.5 text-xs text-muted-foreground">
             {assignee ?? "Unassigned"}{dueDate ? ` · due ${dueDate}` : ""}
@@ -64,32 +78,45 @@ export function TaskItem({ orgSlug, taskId, title, description, assignee, dueDat
         </div>
       </div>
 
-      {done ? (
-        <Badge variant="success">Done</Badge>
-      ) : canComplete ? (
-        isSubscriptionTask ? (
-          <>
-            <Button size="sm" variant="outline" onClick={() => setOpen(true)} disabled={busy}>Complete</Button>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Complete this task?</DialogTitle>
-                  <DialogDescription>
-                    Completing &ldquo;{title}&rdquo; will remove this member&apos;s seat assignment in Stackceipt. This does not revoke
-                    access in the vendor&apos;s own system — do that separately.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button variant="ghost" onClick={() => setOpen(false)} disabled={busy}>Cancel</Button>
-                  <Button onClick={complete} disabled={busy}>Complete &amp; unassign</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </>
+      <div className="flex shrink-0 items-center gap-1.5">
+        {done ? (
+          <Badge variant="success">Done</Badge>
+        ) : cancelled ? (
+          <Badge variant="soft">Cancelled</Badge>
         ) : (
-          <Button size="sm" variant="outline" onClick={complete} disabled={busy}>Complete</Button>
-        )
-      ) : null}
+          <>
+            {canComplete ? (
+              isSubscriptionTask ? (
+                <>
+                  <Button size="sm" variant="outline" onClick={() => setOpen(true)} disabled={busy}>Complete</Button>
+                  <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Complete this task?</DialogTitle>
+                        <DialogDescription>
+                          Completing &ldquo;{title}&rdquo; will remove this member&apos;s seat assignment in Stackceipt. This does not revoke
+                          access in the vendor&apos;s own system — do that separately.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <Button variant="ghost" onClick={() => setOpen(false)} disabled={busy}>Cancel</Button>
+                        <Button onClick={complete} disabled={busy}>Complete &amp; unassign</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </>
+              ) : (
+                <Button size="sm" variant="outline" onClick={complete} disabled={busy}>Complete</Button>
+              )
+            ) : null}
+            {canCancel ? (
+              <Button size="icon" variant="ghost" className="size-8 text-muted-foreground" aria-label="Cancel task" title="Cancel task" onClick={cancel} disabled={busy}>
+                <X className="size-4" />
+              </Button>
+            ) : null}
+          </>
+        )}
+      </div>
     </li>
   );
 }

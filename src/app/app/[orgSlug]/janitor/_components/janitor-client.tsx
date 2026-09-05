@@ -28,12 +28,13 @@ export function RunJanitorButton() {
   const [running, setRunning] = React.useState(false);
   return (
     <Button
-      onClick={async () => {
+      onClick={() => {
         setRunning(true);
-        await new Promise((r) => setTimeout(r, 700));
-        setRunning(false);
-        toast.success("Janitor scan complete (demo)", { description: "Findings are recomputed deterministically and de-duplicated by fingerprint." });
+        // Findings are recomputed deterministically from live data on every
+        // load, so a rescan is a real refresh of the rules engine.
         router.refresh();
+        toast.success("Janitor rescanned", { description: "Findings recomputed from your current data." });
+        setTimeout(() => setRunning(false), 400);
       }}
       disabled={running}
     >

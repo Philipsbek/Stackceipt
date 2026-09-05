@@ -141,6 +141,60 @@ export async function completeTaskAction(orgSlug: string, taskId: string): Promi
   return { ok: true };
 }
 
+export async function addTaskAction(orgSlug: string, caseId: string, title: string): Promise<ActionResult> {
+  const trimmed = (title ?? "").trim();
+  if (trimmed.length < 2) return { error: "Enter a task title." };
+
+  const actor = await resolveActor(orgSlug);
+  if (!actor) return { error: "Not authorized" };
+  if (actor.isReadOnly) return { error: DEMO_READONLY_ERROR };
+  if (actor.role !== "OWNER" && actor.role !== "ADMIN") return { error: "Only owners and admins can add tasks." };
+  const { supabase, orgId } = actor;
+
+  const { data: caseRow } = await supabase
+    .from("offboarding_cases")
+    .select("id, status")
+    .eq("organization_id", orgId)
+    .eq("id", caseId)
+    .maybeSingle();
+  if (!caseRow) return { error: "Case not found." };
+  if (caseRow.status === "COMPLETED" || caseRow.status === "CANCELLED") return { error: "This case is closed." };
+
+  const { error } = await supabase.from("offboarding_tasks").insert({
+    organization_id: orgId,
+    offboarding_case_id: caseId,
+    title: trimmed.slice(0, 200),
+    status: "PENDING",
+  });
+  if (error) return { error: friendly(error.message) };
+
+  await appendAudit(supabase, orgId, "offboarding.task_added", "offboarding_case", caseId, null, { title: trimmed }, {});
+  revalidatePath(`/app/${orgSlug}/offboarding/${caseId}`);
+  return { ok: true };
+}
+
+export async function cancelTaskAction(orgSlug: string, taskId: string): Promise<ActionResult> {
+  const actor = await resolveActor(orgSlug);
+  if (!actor) return { error: "Not authorized" };
+  if (actor.isReadOnly) return { error: DEMO_READONLY_ERROR };
+  if (actor.role !== "OWNER" && actor.role !== "ADMIN") return { error: "Only owners and admins can cancel tasks." };
+  const { supabase, orgId } = actor;
+
+  const { data: updated, error } = await supabase
+    .from("offboarding_tasks")
+    .update({ status: "CANCELLED" })
+    .eq("organization_id", orgId)
+    .eq("id", taskId)
+    .eq("status", "PENDING")
+    .select("id, offboarding_case_id");
+  if (error) return { error: friendly(error.message) };
+  if (!updated || updated.length === 0) return { error: "This task can no longer be cancelled." };
+
+  await appendAudit(supabase, orgId, "offboarding.task_cancelled", "offboarding_task", taskId, null, { status: "CANCELLED" }, {});
+  revalidatePath(`/app/${orgSlug}/offboarding/${(updated[0] as { offboarding_case_id: string }).offboarding_case_id}`);
+  return { ok: true };
+}
+
 export async function completeCaseAction(orgSlug: string, caseId: string): Promise<ActionResult> {
   const actor = await resolveActor(orgSlug);
   if (!actor) return { error: "Not authorized" };
