@@ -88,7 +88,7 @@ export function AppShell({ org, orgs, user, navItems, unreadCount, notifications
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-b border-[color:var(--warning-border)] bg-[color:var(--warning-bg)] px-4 py-1.5 text-center text-xs text-[color:var(--warning)]">
             <span className="font-medium">You&apos;re exploring a read-only demo.</span>
             <Link href="/auth/sign-up" className="font-semibold underline underline-offset-2 hover:opacity-80">
-              Create your own free workspace →
+              Request access →
             </Link>
           </div>
         ) : null}

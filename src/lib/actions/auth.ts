@@ -27,6 +27,12 @@ export async function signUpAction(_prev: AuthResult, formData: FormData): Promi
   const fullName = String(formData.get("fullName") ?? "");
   const next = safeNext(String(formData.get("next") ?? ""));
 
+  // Public self-service sign-up is closed. Accounts are created only by
+  // completing an invitation (which arrives with an /invite/<token> link).
+  if (!next.startsWith("/invite/")) {
+    return { error: "Sign-up is invite-only. Request access from the developer, then log in." };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
