@@ -14,7 +14,7 @@ export default async function AccountPage({ params }: { params: Promise<{ orgSlu
   if (!ctx) notFound();
   const { actor, currentMember } = ctx;
 
-  // Read the raw profile name (not the "Pending member" display fallback).
+  // Read the raw profile name (not the "Unnamed member" display fallback).
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   const { data: profile } = userData.user

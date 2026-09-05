@@ -48,7 +48,10 @@ function mapMember(r: MemberRowRaw, emailOverride?: string | null): Member {
     userId: r.user_id,
     role: r.role,
     status: r.status,
-    fullName: r.profiles?.full_name || r.invited_email || "Pending member",
+    // Falls back to the invited email for not-yet-joined invites; an active
+    // member who simply hasn't set a name shows "Unnamed member" (they can set
+    // it in Account → Your account).
+    fullName: r.profiles?.full_name || r.invited_email || "Unnamed member",
     email: emailOverride ?? r.invited_email ?? "",
     invitedEmail: r.invited_email,
     joinedAt: r.joined_at,
