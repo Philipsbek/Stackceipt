@@ -110,7 +110,7 @@ export default async function MemberDetailPage({
         </Card>
       ) : null}
 
-      {(canManage || canOffboard) ? (
+      {(canManage || canOffboard) && member.role !== "OWNER" ? (
         <Card>
           <CardHeader><CardTitle>Manage</CardTitle></CardHeader>
           <CardContent>

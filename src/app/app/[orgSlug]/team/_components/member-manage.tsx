@@ -41,6 +41,10 @@ export function MemberManage({ orgSlug, member, canManage, canOffboard, hasOpenO
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  // The owner isn't managed here — role, suspension, offboarding, and removal
+  // don't apply. Ownership changes via Settings → Transfer ownership.
+  const isOwner = member.role === "OWNER";
+
   async function remove() {
     setBusy(true);
     setError(null);
@@ -99,7 +103,7 @@ export function MemberManage({ orgSlug, member, canManage, canOffboard, hasOpenO
 
   return (
     <div className="flex flex-wrap gap-2">
-      {canManage ? (
+      {canManage && !isOwner ? (
         <Dialog open={roleOpen} onOpenChange={(v) => { setRoleOpen(v); if (!v) { setRole(member.role); setError(null); } }}>
           <DialogTrigger asChild>
             <Button variant="outline">Change role</Button>
@@ -131,13 +135,13 @@ export function MemberManage({ orgSlug, member, canManage, canOffboard, hasOpenO
         </Dialog>
       ) : null}
 
-      {canManage ? (
+      {canManage && !isOwner ? (
         <Button variant="outline" onClick={toggleSuspend} disabled={busy}>
           {member.status === "ACTIVE" ? "Suspend" : "Reactivate"}
         </Button>
       ) : null}
 
-      {canOffboard && !hasOpenOffboarding ? (
+      {canOffboard && !hasOpenOffboarding && !isOwner ? (
         <Dialog open={offboardOpen} onOpenChange={(v) => { setOffboardOpen(v); if (!v) { setDepartureDate(""); setNotes(""); setError(null); } }}>
           <DialogTrigger asChild>
             <Button variant="outline">Start offboarding</Button>
@@ -170,7 +174,7 @@ export function MemberManage({ orgSlug, member, canManage, canOffboard, hasOpenO
         </Dialog>
       ) : null}
 
-      {canManage && member.status !== "REMOVED" ? (
+      {canManage && member.status !== "REMOVED" && !isOwner ? (
         <Dialog open={removeOpen} onOpenChange={(v) => { setRemoveOpen(v); if (!v) setError(null); }}>
           <DialogTrigger asChild>
             <Button variant="outline" className="text-destructive hover:text-destructive">Remove</Button>
