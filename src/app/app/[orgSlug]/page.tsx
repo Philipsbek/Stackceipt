@@ -57,7 +57,7 @@ export default async function DashboardPage({
       />
 
       {/* Primary financial metrics */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <MetricCard
           label="Monthly recurring"
           emphasis
@@ -80,7 +80,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Attention row */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <MetricCard label="Open requests" value={data.openRequests} href={`${base}/requests`} hint="Awaiting a decision" />
         <MetricCard label="Reviews due" value={data.reviewsDue} href={`${base}/reviews`} hint="Scheduled or in progress" />
         <MetricCard label="Janitor findings" value={data.openFindings} href={`${base}/janitor`} hint="Unresolved" />

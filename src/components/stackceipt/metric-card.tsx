@@ -47,7 +47,7 @@ export function MetricCard({ label, value, hint, tooltip, href, className, empha
           </TooltipProvider>
         ) : null}
       </div>
-      <div className={cn("mt-2 font-semibold tracking-tight tabular-nums", emphasis ? "text-3xl" : "text-2xl")}>
+      <div className={cn("mt-2 font-semibold tracking-tight tabular-nums", emphasis ? "text-2xl sm:text-3xl" : "text-2xl")}>
         {value}
       </div>
       {hint ? <div className="mt-1 text-xs text-muted-foreground">{hint}</div> : null}
