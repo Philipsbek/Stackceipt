@@ -99,8 +99,8 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext | nu
     .maybeSingle();
   if (!orgRow) return null;
 
-  // Members and departments both depend only on the org id — fetch in parallel.
-  const [membersRes, deptsRes] = await Promise.all([
+  // Members, departments, and member emails all depend only on the org id.
+  const [membersRes, deptsRes, emailsRes] = await Promise.all([
     supabase
       .from("organization_members")
       .select("id, organization_id, user_id, role, status, invited_email, joined_at, created_at, profiles(full_name)")
@@ -110,7 +110,14 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext | nu
       .select("id, manager_member_id")
       .eq("organization_id", orgRow.id)
       .is("archived_at", null),
+    // Real emails for active members (invited_email is cleared once they join).
+    supabase.rpc("org_member_emails", { p_org: orgRow.id }),
   ]);
+
+  const emailByMember = new Map<string, string>();
+  for (const row of (emailsRes.data ?? []) as Array<{ member_id: string; email: string | null }>) {
+    if (row.email) emailByMember.set(row.member_id, row.email);
+  }
 
   const rows = (membersRes.data ?? []) as unknown as MemberRowRaw[];
   const currentRaw = rows.find((m) => m.user_id === session.userId && m.status === "ACTIVE");
@@ -118,9 +125,9 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext | nu
   if (!currentRaw) return null;
 
   const members = rows.map((r) =>
-    mapMember(r, r.user_id === session.userId ? session.email : undefined),
+    mapMember(r, emailByMember.get(r.id) ?? (r.user_id === session.userId ? session.email : undefined)),
   );
-  const currentMember = mapMember(currentRaw, session.email);
+  const currentMember = mapMember(currentRaw, emailByMember.get(currentRaw.id) ?? session.email);
 
   const managedDepartmentIds = ((deptsRes.data ?? []) as Array<{ id: string; manager_member_id: string | null }>)
     .filter((d) => d.manager_member_id === currentMember.id)
