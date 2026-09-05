@@ -3,12 +3,9 @@ import { getOrgContext } from "@/lib/data/access";
 import { listDepartments } from "@/lib/data/collections";
 import { can } from "@/lib/domain/permissions";
 import { PageHeader } from "@/components/stackceipt/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Money } from "@/components/stackceipt/money";
-import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/stackceipt/states";
 import { DepartmentDialog } from "./_components/department-dialog";
-import { DepartmentMembers, type DeptMember } from "./_components/department-members";
+import { DepartmentsGrid } from "./_components/departments-grid";
+import type { DeptMember } from "./_components/department-members";
 
 export default async function DepartmentsPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
@@ -31,51 +28,15 @@ export default async function DepartmentsPage({ params }: { params: Promise<{ or
         actions={canCreate ? <DepartmentDialog orgSlug={org.slug} members={members} /> : undefined}
       />
 
-      {departments.length === 0 ? (
-        <EmptyState title="No departments yet" description="Create a department to organize subscriptions and spend." />
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {departments.map((d) => (
-            <Card key={d.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between gap-2">
-                  <CardTitle>{d.name}</CardTitle>
-                  <div className="flex items-center gap-1.5">
-                    {d.managerName ? <Badge variant="soft">{d.managerName}</Badge> : <Badge variant="warning">No manager</Badge>}
-                    {canCreate ? <DepartmentDialog orgSlug={org.slug} members={members} department={d} /> : null}
-                  </div>
-                </div>
-                {d.description ? <p className="text-sm text-muted-foreground">{d.description}</p> : null}
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-end justify-between">
-                  <div>
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Annual cost</div>
-                    <div className="text-xl font-semibold tabular-nums"><Money minor={d.annualizedMinor} currency={org.baseCurrency} showCents={false} /></div>
-                  </div>
-                  <div className="text-right text-xs text-muted-foreground">
-                    <div>{d.subscriptionCount} subscriptions</div>
-                    <div>{d.memberCount} {d.memberCount === 1 ? "member" : "members"}</div>
-                  </div>
-                </div>
-                <div className="border-t border-border pt-3">
-                  <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Members</div>
-                  <DepartmentMembers
-                    orgSlug={org.slug}
-                    departmentId={d.id}
-                    members={d.memberIds
-                      .map((id) => members.find((m) => m.id === id))
-                      .filter((m): m is (typeof members)[number] => Boolean(m))
-                      .map((m) => ({ id: m.id, name: m.fullName, email: m.email }))}
-                    roster={roster}
-                    canManage={canManageMembers}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <DepartmentsGrid
+        orgSlug={org.slug}
+        baseCurrency={org.baseCurrency}
+        departments={departments}
+        members={members}
+        roster={roster}
+        canCreate={canCreate}
+        canManage={canManageMembers}
+      />
     </div>
   );
 }
