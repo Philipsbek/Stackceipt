@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -30,7 +31,11 @@ export function NotificationBell({ orgSlug, notifications, unreadCount, isReadOn
   const [allRead, setAllRead] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
   const [panelTop, setPanelTop] = React.useState(64);
+  const [mounted, setMounted] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => setMounted(true), []);
 
   const shownUnread = allRead ? 0 : Math.max(0, unreadCount);
 
@@ -44,8 +49,9 @@ export function NotificationBell({ orgSlug, notifications, unreadCount, isReadOn
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  // Measure the header's actual bottom so the mobile panel sits just under it,
-  // accounting for the read-only demo banner that can push the header down.
+  // Position the mobile panel just under the bell. It is portaled to <body>
+  // (see below) so `fixed` is viewport-relative — the header's backdrop-blur
+  // would otherwise make it the containing block and offset the panel downward.
   React.useEffect(() => {
     if (!open || !isMobile) return;
     const measure = () => {
@@ -64,7 +70,11 @@ export function NotificationBell({ orgSlug, notifications, unreadCount, isReadOn
   React.useEffect(() => {
     if (!open) return;
     const onPointerDown = (e: PointerEvent) => {
-      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      // The panel is portaled outside the container, so check it separately.
+      if (!containerRef.current?.contains(target) && !panelRef.current?.contains(target)) {
+        setOpen(false);
+      }
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
@@ -114,8 +124,9 @@ export function NotificationBell({ orgSlug, notifications, unreadCount, isReadOn
         )}
       </button>
 
-      {open && (
+      {open && ((panel) => (isMobile && mounted ? createPortal(panel, document.body) : panel))(
         <div
+          ref={panelRef}
           role="dialog"
           aria-label="Notifications"
           style={isMobile ? { top: panelTop } : undefined}
