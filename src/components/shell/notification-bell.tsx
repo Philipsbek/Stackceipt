@@ -28,9 +28,38 @@ export function NotificationBell({ orgSlug, notifications, unreadCount, isReadOn
   const [open, setOpen] = React.useState(false);
   const [locallyRead, setLocallyRead] = React.useState<Set<string>>(new Set());
   const [allRead, setAllRead] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
+  const [panelTop, setPanelTop] = React.useState(64);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const shownUnread = allRead ? 0 : Math.max(0, unreadCount);
+
+  // Below the `sm` breakpoint the panel drops from the header edge across the
+  // viewport instead of anchoring to the bell (which would overflow the screen).
+  React.useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // Measure the header's actual bottom so the mobile panel sits just under it,
+  // accounting for the read-only demo banner that can push the header down.
+  React.useEffect(() => {
+    if (!open || !isMobile) return;
+    const measure = () => {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (rect) setPanelTop(rect.bottom + 8);
+    };
+    measure();
+    window.addEventListener("scroll", measure, true);
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("scroll", measure, true);
+      window.removeEventListener("resize", measure);
+    };
+  }, [open, isMobile]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -89,7 +118,12 @@ export function NotificationBell({ orgSlug, notifications, unreadCount, isReadOn
         <div
           role="dialog"
           aria-label="Notifications"
-          className="absolute right-0 top-[calc(100%+8px)] z-50 flex max-h-[min(70vh,520px)] w-[360px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-[0_18px_50px_-24px_rgba(0,0,0,0.35)]"
+          style={isMobile ? { top: panelTop } : undefined}
+          className={`z-50 flex max-h-[min(70vh,520px)] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-[0_18px_50px_-24px_rgba(0,0,0,0.35)] ${
+            isMobile
+              ? "fixed left-3 right-3 w-auto"
+              : "absolute right-0 top-[calc(100%+8px)] w-[360px] max-w-[calc(100vw-2rem)]"
+          }`}
         >
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <span className="text-sm font-semibold">Notifications</span>
