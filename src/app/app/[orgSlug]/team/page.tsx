@@ -37,6 +37,7 @@ export default async function TeamPage({ params }: { params: Promise<{ orgSlug: 
               <TableHead>Member</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Departments</TableHead>
               <TableHead className="text-right">Assignments</TableHead>
               <TableHead>Joined</TableHead>
               <TableHead></TableHead>
@@ -61,6 +62,15 @@ export default async function TeamPage({ params }: { params: Promise<{ orgSlug: 
                     {m.hasOpenOffboarding ? <Badge variant="warning">Offboarding</Badge> : null}
                   </div>
                 </TableCell>
+                <TableCell>
+                  {m.departmentNames.length ? (
+                    <div className="flex flex-wrap gap-1">
+                      {m.departmentNames.map((d) => <Badge key={d} variant="soft">{d}</Badge>)}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
                 <TableCell className="text-right tabular-nums">{m.subscriptionCount}</TableCell>
                 <TableCell className="text-muted-foreground">{m.joinedAt ? formatDate(m.joinedAt.slice(0, 10)) : "—"}</TableCell>
                 <TableCell className="text-right">
@@ -78,9 +88,14 @@ export default async function TeamPage({ params }: { params: Promise<{ orgSlug: 
             <Card className="flex items-center justify-between p-4">
               <div className="flex items-center gap-2.5">
                 <Avatar className="size-9"><AvatarFallback>{initials(m.fullName)}</AvatarFallback></Avatar>
-                <div>
+                <div className="min-w-0">
                   <div className="font-medium">{m.fullName}</div>
-                  <div className="text-xs text-muted-foreground">{m.email}</div>
+                  <div className="truncate text-xs text-muted-foreground">{m.email}</div>
+                  {m.departmentNames.length ? (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {m.departmentNames.slice(0, 3).map((d) => <Badge key={d} variant="soft" className="text-[10px]">{d}</Badge>)}
+                    </div>
+                  ) : null}
                 </div>
               </div>
               <RoleBadge role={m.role} />

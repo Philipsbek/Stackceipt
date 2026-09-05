@@ -221,13 +221,17 @@ export async function listDepartments(organizationId: string, members: Member[])
 export interface MemberRow extends Member {
   subscriptionCount: number;
   hasOpenOffboarding: boolean;
+  /** Names of the departments this member belongs to. */
+  departmentNames: string[];
 }
 
 export async function listTeam(organizationId: string, members: Member[]): Promise<MemberRow[]> {
   const supabase = await createClient();
-  const [{ data: assigns }, { data: cases }] = await Promise.all([
+  const [{ data: assigns }, { data: cases }, { data: deptRows }] = await Promise.all([
     supabase.from("subscription_members").select("member_id").eq("organization_id", organizationId).is("unassigned_at", null),
     supabase.from("offboarding_cases").select("member_id, status").eq("organization_id", organizationId).in("status", ["OPEN", "IN_PROGRESS"]),
+    // Degrades gracefully (empty) until the department_members migration is applied.
+    supabase.from("department_members").select("member_id, departments(name)").eq("organization_id", organizationId),
   ]);
   const counts = new Map<string, number>();
   for (const a of assigns ?? []) {
@@ -235,10 +239,20 @@ export async function listTeam(organizationId: string, members: Member[]): Promi
     counts.set(id, (counts.get(id) ?? 0) + 1);
   }
   const offboarding = new Set((cases ?? []).map((c: any) => c.member_id as string));
+  // member_id -> sorted department names.
+  const deptsByMember = new Map<string, string[]>();
+  for (const row of (deptRows ?? []) as any[]) {
+    const name = (row.departments as { name: string } | null)?.name;
+    if (!name) continue;
+    const list = deptsByMember.get(row.member_id) ?? [];
+    list.push(name);
+    deptsByMember.set(row.member_id, list);
+  }
   return members.map((m) => ({
     ...m,
     subscriptionCount: counts.get(m.id) ?? 0,
     hasOpenOffboarding: offboarding.has(m.id),
+    departmentNames: (deptsByMember.get(m.id) ?? []).sort((a, b) => a.localeCompare(b)),
   }));
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
