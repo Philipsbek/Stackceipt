@@ -127,17 +127,27 @@ export function sumMinor(values: number[]): number {
  * Format a minor-unit amount as a localized currency string.
  * Uses Intl.NumberFormat; falls back gracefully for unknown currencies.
  */
+// Currencies whose ISO code renders without a recognizable local symbol in the
+// en-US locale (e.g. MYR → "MYR"), so we prefer the narrow symbol (→ "RM").
+const NARROW_SYMBOL_CURRENCIES = new Set(["MYR"]);
+
+function currencyDisplayFor(code: string): "symbol" | "narrowSymbol" {
+  return NARROW_SYMBOL_CURRENCIES.has(code) ? "narrowSymbol" : "symbol";
+}
+
 export function formatMoney(
   amountMinor: number,
   currency: string,
   options?: { locale?: string; showCents?: boolean },
 ): string {
   const locale = options?.locale ?? "en-US";
+  const code = currency.toUpperCase();
   const major = amountMinor / 100;
   try {
     return new Intl.NumberFormat(locale, {
       style: "currency",
-      currency: currency.toUpperCase(),
+      currency: code,
+      currencyDisplay: currencyDisplayFor(code),
       minimumFractionDigits: options?.showCents === false ? 0 : 2,
       maximumFractionDigits: options?.showCents === false ? 0 : 2,
     }).format(major);
@@ -153,11 +163,13 @@ export function formatMoneyCompact(
   currency: string,
   locale = "en-US",
 ): string {
+  const code = currency.toUpperCase();
   const major = amountMinor / 100;
   try {
     return new Intl.NumberFormat(locale, {
       style: "currency",
-      currency: currency.toUpperCase(),
+      currency: code,
+      currencyDisplay: currencyDisplayFor(code),
       notation: "compact",
       maximumFractionDigits: 1,
     }).format(major);

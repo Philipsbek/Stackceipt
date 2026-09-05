@@ -8,10 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD"];
-const TIMEZONES = ["America/New_York", "America/Chicago", "America/Los_Angeles", "Europe/London", "Europe/Berlin", "Asia/Singapore"];
+import { CurrencyCombobox } from "@/components/stackceipt/currency-combobox";
+import { timezoneForCurrency } from "@/lib/domain/currencies";
 
 function slugify(v: string): string {
   return v.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -22,7 +20,7 @@ export function OnboardingForm() {
   const [slug, setSlug] = React.useState("");
   const [slugEdited, setSlugEdited] = React.useState(false);
   const [currency, setCurrency] = React.useState("USD");
-  const [timezone, setTimezone] = React.useState("America/New_York");
+  const timezone = timezoneForCurrency(currency); // follows the currency
   const [renewalWindow, setRenewalWindow] = React.useState("90");
   const [loading, setLoading] = React.useState(false);
 
@@ -69,17 +67,14 @@ export function OnboardingForm() {
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <Label className="mb-1.5">Currency</Label>
-              <Select value={currency} onValueChange={setCurrency}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-              </Select>
+              <CurrencyCombobox value={currency} onChange={setCurrency} />
             </div>
             <div className="sm:col-span-2">
               <Label className="mb-1.5">Timezone</Label>
-              <Select value={timezone} onValueChange={setTimezone}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{TIMEZONES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-              </Select>
+              <div className="flex h-9 items-center rounded-lg border border-transparent bg-secondary px-3 text-sm text-muted-foreground">
+                {timezone}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Set automatically from your currency.</p>
             </div>
           </div>
           <div>
