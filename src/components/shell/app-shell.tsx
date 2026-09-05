@@ -12,6 +12,7 @@ import {
   ChevronsUpDown,
   ClipboardCheck,
   ClipboardList,
+  CircleUser,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -131,6 +132,11 @@ export function AppShell({ org, orgs, user, navItems, unreadCount, notifications
                 <div className="truncate text-xs font-normal normal-case text-muted-foreground">{user.email}</div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href={`/app/${org.slug}/account`}>
+                  <CircleUser className="size-4" /> Your account
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href={`/app/${org.slug}/settings`}>
                   <Settings className="size-4" /> Organization settings
