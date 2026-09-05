@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import type { Member } from "@/lib/domain/types";
 import type { DepartmentRow } from "@/lib/data/collections";
 import { Money } from "@/components/stackceipt/money";
+import { ProductMark } from "@/components/stackceipt/product-mark";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/stackceipt/states";
@@ -104,6 +105,25 @@ export function DepartmentsGrid({
                       <div>{d.subscriptionCount} subscriptions</div>
                       <div>{d.memberCount} {d.memberCount === 1 ? "member" : "members"}</div>
                     </div>
+                  </div>
+                  <div className="border-t border-border pt-3">
+                    <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Tools</div>
+                    {d.tools.length === 0 ? (
+                      <span className="text-xs text-muted-foreground">No subscriptions yet</span>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {d.tools.slice(0, 8).map((t, i) => (
+                          <span key={`${t.vendorName}-${t.productName}-${i}`} title={`${t.vendorName} ${t.productName}`.trim()}>
+                            <ProductMark vendorName={t.vendorName} productName={t.productName} className="size-8" />
+                          </span>
+                        ))}
+                        {d.tools.length > 8 ? (
+                          <span className="flex size-8 items-center justify-center rounded-lg bg-secondary text-[11px] font-medium text-muted-foreground">
+                            +{d.tools.length - 8}
+                          </span>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
                   <div className="border-t border-border pt-3">
                     <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Members</div>

@@ -182,6 +182,8 @@ export interface DepartmentRow extends Department {
   /** Member ids assigned to this department (resolve names/emails via the members list). */
   memberIds: string[];
   subscriptionCount: number;
+  /** The tools (subscriptions) attributed to this department, for logos. */
+  tools: { vendorName: string; productName: string }[];
   annualizedMinor: number;
 }
 
@@ -189,7 +191,7 @@ export async function listDepartments(organizationId: string, members: Member[])
   const supabase = await createClient();
   const [{ data: depts }, { data: subs }, { data: deptMembers }] = await Promise.all([
     supabase.from("departments").select("*").eq("organization_id", organizationId).order("name"),
-    supabase.from("subscriptions").select("department_id, amount_minor, billing_cadence, billing_interval_months, status").eq("organization_id", organizationId).neq("status", "ARCHIVED"),
+    supabase.from("subscriptions").select("department_id, vendor_name, product_name, amount_minor, billing_cadence, billing_interval_months, status").eq("organization_id", organizationId).neq("status", "ARCHIVED"),
     // Degrades gracefully (empty) until the department_members migration is applied.
     supabase.from("department_members").select("department_id, member_id").eq("organization_id", organizationId),
   ]);
@@ -212,6 +214,7 @@ export async function listDepartments(organizationId: string, members: Member[])
       memberCount: memberIds.length,
       memberIds,
       subscriptionCount: deptSubs.length,
+      tools: deptSubs.map((s: any) => ({ vendorName: s.vendor_name as string, productName: s.product_name as string })),
       annualizedMinor: deptSubs.reduce((sum: number, s: any) => sum + annualizedMinor(Number(s.amount_minor), s.billing_cadence, s.billing_interval_months), 0),
     };
   });
