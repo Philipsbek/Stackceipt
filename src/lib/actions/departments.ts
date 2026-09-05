@@ -109,3 +109,40 @@ export async function updateDepartmentAction(orgSlug: string, id: string, input:
   revalidatePath(`/app/${orgSlug}`, "layout");
   return { ok: true, id };
 }
+
+/** Owner/admin: add an active org member to a department. */
+export async function addDepartmentMemberAction(orgSlug: string, departmentId: string, memberId: string): Promise<ActionResult> {
+  const actor = await resolveActor(orgSlug);
+  if (!actor) return { error: "Not authorized" };
+  if (actor.isReadOnly) return { error: DEMO_READONLY_ERROR };
+  if (actor.role !== "OWNER" && actor.role !== "ADMIN") return { error: "Only owners and admins can manage department members." };
+  if (!departmentId || !memberId) return { error: "Missing department or member." };
+  const { supabase, orgId } = actor;
+
+  const { error } = await supabase.from("department_members").upsert(
+    { organization_id: orgId, department_id: departmentId, member_id: memberId, added_by_member_id: actor.memberId },
+    { onConflict: "department_id,member_id" },
+  );
+  if (error) return { error: "Could not add the member. Please try again." };
+  revalidatePath(`/app/${orgSlug}/departments`);
+  return { ok: true };
+}
+
+/** Owner/admin: remove a member from a department. */
+export async function removeDepartmentMemberAction(orgSlug: string, departmentId: string, memberId: string): Promise<ActionResult> {
+  const actor = await resolveActor(orgSlug);
+  if (!actor) return { error: "Not authorized" };
+  if (actor.isReadOnly) return { error: DEMO_READONLY_ERROR };
+  if (actor.role !== "OWNER" && actor.role !== "ADMIN") return { error: "Only owners and admins can manage department members." };
+  const { supabase, orgId } = actor;
+
+  const { error } = await supabase
+    .from("department_members")
+    .delete()
+    .eq("organization_id", orgId)
+    .eq("department_id", departmentId)
+    .eq("member_id", memberId);
+  if (error) return { error: "Could not remove the member. Please try again." };
+  revalidatePath(`/app/${orgSlug}/departments`);
+  return { ok: true };
+}

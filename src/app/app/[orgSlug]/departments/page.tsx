@@ -8,6 +8,7 @@ import { Money } from "@/components/stackceipt/money";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/stackceipt/states";
 import { DepartmentDialog } from "./_components/department-dialog";
+import { DepartmentMembers, type DeptMember } from "./_components/department-members";
 
 export default async function DepartmentsPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
@@ -17,6 +18,10 @@ export default async function DepartmentsPage({ params }: { params: Promise<{ or
 
   const departments = (await listDepartments(org.id, members)).filter((d) => !d.archivedAt);
   const canCreate = can(actor, "department.create");
+  const canManageMembers = can(actor, "department.update");
+  const roster: DeptMember[] = members
+    .filter((m) => m.status === "ACTIVE")
+    .map((m) => ({ id: m.id, name: m.fullName, email: m.email }));
 
   return (
     <div className="space-y-6">
@@ -50,7 +55,21 @@ export default async function DepartmentsPage({ params }: { params: Promise<{ or
                   </div>
                   <div className="text-right text-xs text-muted-foreground">
                     <div>{d.subscriptionCount} subscriptions</div>
+                    <div>{d.memberCount} {d.memberCount === 1 ? "member" : "members"}</div>
                   </div>
+                </div>
+                <div className="border-t border-border pt-3">
+                  <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Members</div>
+                  <DepartmentMembers
+                    orgSlug={org.slug}
+                    departmentId={d.id}
+                    members={d.memberIds
+                      .map((id) => members.find((m) => m.id === id))
+                      .filter((m): m is (typeof members)[number] => Boolean(m))
+                      .map((m) => ({ id: m.id, name: m.fullName, email: m.email }))}
+                    roster={roster}
+                    canManage={canManageMembers}
+                  />
                 </div>
               </CardContent>
             </Card>

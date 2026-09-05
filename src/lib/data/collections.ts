@@ -179,24 +179,38 @@ export async function listAuditLogs(organizationId: string): Promise<AuditLog[]>
 export interface DepartmentRow extends Department {
   managerName: string | null;
   memberCount: number;
+  /** Member ids assigned to this department (resolve names/emails via the members list). */
+  memberIds: string[];
   subscriptionCount: number;
   annualizedMinor: number;
 }
 
 export async function listDepartments(organizationId: string, members: Member[]): Promise<DepartmentRow[]> {
   const supabase = await createClient();
-  const [{ data: depts }, { data: subs }] = await Promise.all([
+  const [{ data: depts }, { data: subs }, { data: deptMembers }] = await Promise.all([
     supabase.from("departments").select("*").eq("organization_id", organizationId).order("name"),
     supabase.from("subscriptions").select("department_id, amount_minor, billing_cadence, billing_interval_months, status").eq("organization_id", organizationId).neq("status", "ARCHIVED"),
+    // Degrades gracefully (empty) until the department_members migration is applied.
+    supabase.from("department_members").select("department_id, member_id").eq("organization_id", organizationId),
   ]);
-  const activeMembers = members.filter((m) => m.status === "ACTIVE").length;
+  const activeMemberIds = new Set(members.filter((m) => m.status === "ACTIVE").map((m) => m.id));
+  // Map department -> assigned member ids (active members only).
+  const membersByDept = new Map<string, string[]>();
+  for (const dm of (deptMembers ?? []) as Array<{ department_id: string; member_id: string }>) {
+    if (!activeMemberIds.has(dm.member_id)) continue;
+    const list = membersByDept.get(dm.department_id) ?? [];
+    list.push(dm.member_id);
+    membersByDept.set(dm.department_id, list);
+  }
   return (depts ?? []).map((d: any): DepartmentRow => {
     const deptSubs = (subs ?? []).filter((s: any) => s.department_id === d.id);
+    const memberIds = membersByDept.get(d.id) ?? [];
     return {
       id: d.id, organizationId: d.organization_id, name: d.name, description: d.description,
       managerMemberId: d.manager_member_id, archivedAt: d.archived_at, createdAt: d.created_at,
       managerName: d.manager_member_id ? nameFromMembers(members, d.manager_member_id) : null,
-      memberCount: activeMembers,
+      memberCount: memberIds.length,
+      memberIds,
       subscriptionCount: deptSubs.length,
       annualizedMinor: deptSubs.reduce((sum: number, s: any) => sum + annualizedMinor(Number(s.amount_minor), s.billing_cadence, s.billing_interval_months), 0),
     };
