@@ -33,7 +33,7 @@ import { UpdateButton } from "@/components/shell/update-button";
 import { NotificationBell } from "@/components/shell/notification-bell";
 import { RoleBadge } from "@/components/stackceipt/status-badge";
 import type { Notification } from "@/lib/domain/types";
-import type { OrganizationRole } from "@/lib/domain/enums";
+import { ROLE_LABELS, type OrganizationRole } from "@/lib/domain/enums";
 import {
   Sheet,
   SheetContent,
@@ -203,9 +203,10 @@ function SidebarContent({
             <button className="flex w-full items-center justify-between rounded-lg border border-sidebar-border bg-card px-3 py-2 text-left transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium">{org.name}</span>
-                <span className="mt-1 flex items-center gap-1.5">
-                  <RoleBadge role={role} />
-                  <span className="truncate text-xs text-muted-foreground">{org.slug}</span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  <span className="text-foreground/70">{ROLE_LABELS[role]}</span>
+                  <span aria-hidden="true"> · </span>
+                  {org.slug}
                 </span>
               </span>
               <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
