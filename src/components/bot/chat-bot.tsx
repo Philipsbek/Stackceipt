@@ -191,7 +191,7 @@ export function ChatBot() {
       <Button
         type="button"
         size="lg"
-        className="h-11 gap-2 rounded-lg px-4 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]"
+        className="h-11 gap-2 rounded-lg border border-white/20 bg-[linear-gradient(135deg,#7c3aed_0%,#a855f7_48%,#ec4899_100%)] px-4 text-white shadow-[0_10px_30px_-10px_rgba(168,85,247,0.75)] transition-[filter,box-shadow] duration-300 hover:bg-[linear-gradient(135deg,#8b5cf6_0%,#c026d3_50%,#f472b6_100%)] hover:shadow-[0_12px_36px_-8px_rgba(217,70,239,0.9)] hover:brightness-110"
         aria-expanded={isOpen}
         aria-label={isOpen ? "Close assistant" : "Open assistant"}
         onClick={() => setIsOpen((open) => !open)}

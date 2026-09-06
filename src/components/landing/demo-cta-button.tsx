@@ -14,7 +14,7 @@ export function DemoCtaButton() {
       variant="outline"
       disabled={pending}
       aria-label={pending ? "Opening the live demo" : "View live demo"}
-      className="group relative h-12 border-white/25 bg-transparent px-7 text-[15px] text-white transition-[color,background-color,border-color,box-shadow] duration-300 ease-out hover:border-white hover:bg-white hover:text-foreground hover:shadow-[0_0_0_1px_rgba(255,255,255,0.95),0_0_22px_rgba(255,255,255,0.95),0_0_48px_rgba(255,255,255,0.65),0_8px_24px_rgba(10,10,10,0.1)] active:shadow-[0_0_0_1px_rgba(255,255,255,0.9),0_0_16px_rgba(255,255,255,0.75)] motion-reduce:transition-none"
+      className="group relative h-12 border-white/25 bg-transparent px-7 text-[15px] text-white transition-[color,background-color,border-color,box-shadow] duration-300 ease-out hover:border-white hover:bg-white hover:text-black hover:shadow-[0_0_0_1px_rgba(255,255,255,0.95),0_0_22px_rgba(255,255,255,0.95),0_0_48px_rgba(255,255,255,0.65),0_8px_24px_rgba(10,10,10,0.1)] active:shadow-[0_0_0_1px_rgba(255,255,255,0.9),0_0_16px_rgba(255,255,255,0.75)] motion-reduce:transition-none"
     >
       <span className="relative z-10 flex items-center gap-2">
         {pending ? (

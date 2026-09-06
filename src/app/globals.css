@@ -439,3 +439,87 @@
     will-change: auto;
   }
 }
+
+/* Confetti-inspired landing surface. Scoped so the authenticated app stays unchanged. */
+.confetti-landing {
+  --background: #050505;
+  --foreground: #f4f4f4;
+  --card: #141414;
+  --card-foreground: #f4f4f4;
+  --popover: #151515;
+  --popover-foreground: #f4f4f4;
+  --primary: #f4f4f4;
+  --primary-foreground: #090909;
+  --secondary: #232323;
+  --secondary-foreground: #f4f4f4;
+  --muted: #202020;
+  --muted-foreground: #8d8d8d;
+  --accent: #252525;
+  --accent-foreground: #fff;
+  --border: #2a2a2a;
+  --input: #343434;
+  --ring: #a54ff0;
+  color-scheme: dark;
+}
+
+.confetti-landing .landing-scroll-progress { background: #a026ea; }
+.confetti-landing .confetti-display {
+  font-size: clamp(3.5rem, 8vw, 7.8rem);
+  line-height: 1.02;
+  letter-spacing: -.065em;
+  font-weight: 400;
+  padding-bottom: .08em;
+  margin-bottom: -.08em;
+  color: transparent;
+  background: linear-gradient(105deg, #747474 0%, #d7d7d7 28%, #ffffff 50%, #bcbcbc 72%, #777777 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.confetti-landing .confetti-section-title {
+  font-size: clamp(3rem, 6vw, 6rem);
+  line-height: 1.04;
+  letter-spacing: -.055em;
+  font-weight: 400;
+  padding-bottom: .08em;
+  margin-bottom: -.08em;
+  color: transparent;
+  background: linear-gradient(105deg, #777777 0%, #d5d5d5 30%, #ffffff 52%, #b9b9b9 74%, #737373 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.confetti-hero-light {
+  position: absolute;
+  inset: 11rem 0 0;
+  background:
+    radial-gradient(circle at 20% 58%, rgb(153 15 220 / 55%), transparent 30%),
+    radial-gradient(circle at 82% 55%, rgb(0 168 229 / 48%), transparent 32%),
+    radial-gradient(circle at 53% 66%, rgb(52 30 114 / 35%), transparent 34%);
+  filter: blur(42px);
+  opacity: .88;
+  pointer-events: none;
+}
+.confetti-product-stage,
+.confetti-gradient-frame {
+  background: linear-gradient(115deg, #a314d7, #1721bf 44%, #00a8dd 76%, #ef6e25);
+  box-shadow: 0 42px 120px -55px rgb(130 32 231 / 72%);
+}
+.confetti-glow-violet { background: radial-gradient(circle at 30% 55%, rgb(176 21 226 / 78%), transparent 48%), #090910; }
+.confetti-glow-cyan { background: radial-gradient(circle at 76% 46%, rgb(0 176 225 / 68%), transparent 48%), #071015; }
+.confetti-glow-orange { background: radial-gradient(circle at 72% 78%, rgb(241 91 26 / 70%), transparent 40%), radial-gradient(circle at 20% 20%, rgb(157 18 220 / 65%), transparent 42%), #0c080d; }
+.confetti-ui-card { border-color: rgb(255 255 255 / 12%); background: rgb(16 16 18 / 92%); color: #f4f4f4; box-shadow: 0 30px 80px -45px #000; }
+.confetti-vault-frame { border: 1px solid rgb(255 255 255 / 10%); background: radial-gradient(circle at 80% 30%, rgb(130 23 215 / 24%), transparent 35%), #101010; }
+.confetti-landing .context-vault { background: #0b0b0d !important; border-color: rgb(255 255 255 / 12%); }
+.confetti-landing .context-vault > div[class*="rounded-full"] { border-color: rgb(255 255 255 / 10%); }
+.confetti-footer { position: relative; background: #0d0d0d; }
+.confetti-feature-card { transition: transform 300ms cubic-bezier(.22,1,.36,1), border-color 300ms ease; }
+.confetti-feature-card:hover { transform: translateY(-5px); border-color: rgb(255 255 255 / 25%); }
+.confetti-landing .landing-header-enter[data-scrolled="true"] { background: transparent; box-shadow: none; }
+
+@media (max-width: 640px) {
+  .confetti-landing .confetti-display { font-size: clamp(3.2rem, 15vw, 5rem); }
+  .confetti-landing .confetti-section-title { font-size: clamp(2.7rem, 12vw, 4rem); }
+  .confetti-hero { min-height: 820px; }
+  .confetti-nav-wrap { top: .75rem; }
+}
