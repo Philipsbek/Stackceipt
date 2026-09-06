@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import { requestInputSchema, toMinor, type RequestInput } from "@/lib/domain/validation";
 import { annualizedMinor, formatMoney } from "@/lib/domain/money";
 import { BILLING_CADENCES, BILLING_CADENCE_LABELS } from "@/lib/domain/enums";
@@ -60,7 +59,8 @@ export function RequestForm({
     ...initial,
   });
   const [errors, setErrors] = React.useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = React.useState(false);
+  const [pending, setPending] = React.useState<"draft" | "submit" | null>(null);
+  const submitting = pending !== null;
 
   function set<K extends keyof typeof f>(k: K, v: (typeof f)[K]) {
     setF((s) => ({ ...s, [k]: v }));
@@ -95,11 +95,11 @@ export function RequestForm({
       return;
     }
     setErrors({});
-    setSubmitting(true);
+    setPending(asDraft ? "draft" : "submit");
     const result = requestId
       ? await updateRequestAction(orgSlug, requestId, input, asDraft)
       : await createRequestAction(orgSlug, input, asDraft);
-    setSubmitting(false);
+    if (result.error) setPending(null);
     if (result.error) {
       toast.error(result.error);
       return;
@@ -174,11 +174,8 @@ export function RequestForm({
       </Card>
 
       <div className="flex items-center justify-end gap-2">
-        <Button type="button" variant="ghost" onClick={(e) => submit(e, true)} disabled={submitting}>Save draft</Button>
-        <Button type="submit" disabled={submitting}>
-          {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-          Submit request
-        </Button>
+        <Button type="button" variant="ghost" onClick={(e) => submit(e, true)} loading={pending === "draft"} disabled={submitting}>Save draft</Button>
+        <Button type="submit" loading={pending === "submit"} disabled={submitting}>Submit request</Button>
       </div>
     </form>
   );
