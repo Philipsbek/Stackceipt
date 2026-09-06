@@ -4,7 +4,6 @@ import { listNotifications, unreadCount } from "@/lib/data/collections";
 import { can } from "@/lib/domain/permissions";
 import { NAV_ITEMS } from "@/lib/nav";
 import { AppShell } from "@/components/shell/app-shell";
-import { ROLE_LABELS } from "@/lib/domain/enums";
 
 export default async function AppLayout({
   children,
@@ -36,7 +35,7 @@ export default async function AppLayout({
     <AppShell
       org={{ slug: org.slug, name: org.name }}
       orgs={orgs}
-      user={{ name: currentMember.fullName, email: currentMember.email, role: ROLE_LABELS[currentMember.role] }}
+      user={{ name: currentMember.fullName, email: currentMember.email, role: currentMember.role }}
       navItems={navItems}
       unreadCount={unread}
       notifications={recentNotifications}

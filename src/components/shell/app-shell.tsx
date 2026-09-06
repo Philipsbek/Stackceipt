@@ -31,7 +31,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ConnectionStatus } from "@/components/shell/connection-status";
 import { UpdateButton } from "@/components/shell/update-button";
 import { NotificationBell } from "@/components/shell/notification-bell";
+import { RoleBadge } from "@/components/stackceipt/status-badge";
 import type { Notification } from "@/lib/domain/types";
+import type { OrganizationRole } from "@/lib/domain/enums";
 import {
   Sheet,
   SheetContent,
@@ -60,7 +62,7 @@ export interface ShellOrg {
 export interface ShellUser {
   name: string;
   email: string;
-  role: string;
+  role: OrganizationRole;
 }
 
 interface AppShellProps {
@@ -82,7 +84,7 @@ export function AppShell({ org, orgs, user, navItems, unreadCount, notifications
     <div className="min-h-dvh bg-background">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
-        <SidebarContent org={org} orgs={orgs} navItems={navItems} />
+        <SidebarContent org={org} orgs={orgs} navItems={navItems} role={user.role} />
       </aside>
 
       <div className="lg:pl-60">
@@ -104,7 +106,7 @@ export function AppShell({ org, orgs, user, navItems, unreadCount, notifications
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
               <SheetTitle className="sr-only">Navigation</SheetTitle>
-              <SidebarContent org={org} orgs={orgs} navItems={navItems} onNavigate={() => setMobileOpen(false)} />
+              <SidebarContent org={org} orgs={orgs} navItems={navItems} role={user.role} onNavigate={() => setMobileOpen(false)} />
             </SheetContent>
           </Sheet>
 
@@ -129,8 +131,14 @@ export function AppShell({ org, orgs, user, navItems, unreadCount, notifications
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
-                <div className="font-medium normal-case text-foreground">{user.name}</div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium normal-case text-foreground">{user.name}</span>
+                  <RoleBadge role={user.role} />
+                </div>
                 <div className="truncate text-xs font-normal normal-case text-muted-foreground">{user.email}</div>
+                <div className="mt-1 text-xs font-normal normal-case text-muted-foreground">
+                  Your role in {org.name}
+                </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
@@ -167,11 +175,13 @@ function SidebarContent({
   org,
   orgs,
   navItems,
+  role,
   onNavigate,
 }: {
   org: ShellOrg;
   orgs: ShellOrg[];
   navItems: NavItem[];
+  role: OrganizationRole;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
@@ -193,7 +203,10 @@ function SidebarContent({
             <button className="flex w-full items-center justify-between rounded-lg border border-sidebar-border bg-card px-3 py-2 text-left transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium">{org.name}</span>
-                <span className="block text-xs text-muted-foreground">{org.slug}</span>
+                <span className="mt-1 flex items-center gap-1.5">
+                  <RoleBadge role={role} />
+                  <span className="truncate text-xs text-muted-foreground">{org.slug}</span>
+                </span>
               </span>
               <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
             </button>
