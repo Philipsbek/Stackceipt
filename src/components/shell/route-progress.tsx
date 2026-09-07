@@ -105,7 +105,7 @@ export function RouteProgress() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-[100] h-0.5">
       <div
-        className="h-full bg-[#171717] transition-[width,opacity] duration-200 ease-out"
+        className="h-full bg-foreground transition-[width,opacity] duration-200 ease-out"
         style={{ width: `${width}%`, opacity: width >= 100 ? 0 : 1 }}
       />
     </div>

@@ -172,7 +172,7 @@ export function NotificationBell({ orgSlug, notifications, unreadCount, isReadOn
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2">
                         <span className={`truncate text-sm ${!isRead ? "font-semibold" : "font-medium"}`}>{n.title}</span>
-                        {!isRead ? <span className="size-1.5 shrink-0 rounded-full bg-[#171717]" /> : null}
+                        {!isRead ? <span className="size-1.5 shrink-0 rounded-full bg-foreground" /> : null}
                       </span>
                       <span className="line-clamp-2 text-sm text-muted-foreground">{n.body}</span>
                       <span className="mt-0.5 block text-xs text-muted-foreground">{formatDateTime(n.createdAt, { timezone })}</span>
