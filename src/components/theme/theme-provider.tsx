@@ -58,7 +58,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     window.clearTimeout(transitionTimer.current);
     transitionTimer.current = window.setTimeout(
       () => root.classList.remove("theme-transition"),
-      320,
+      180,
     );
 
     setThemeState(next);
