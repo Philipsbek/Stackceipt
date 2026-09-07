@@ -31,6 +31,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ConnectionStatus } from "@/components/shell/connection-status";
 import { UpdateButton } from "@/components/shell/update-button";
 import { NotificationBell } from "@/components/shell/notification-bell";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import type { Notification } from "@/lib/domain/types";
 import {
   Sheet,
@@ -109,6 +110,8 @@ export function AppShell({ org, orgs, user, navItems, unreadCount, notifications
           </Sheet>
 
           <div className="flex-1" />
+
+          <ThemeToggle />
 
           <NotificationBell
             orgSlug={org.slug}

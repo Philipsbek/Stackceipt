@@ -1,11 +1,17 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Toaster } from "@/components/ui/sonner";
 import { ChatBot } from "@/components/bot/chat-bot";
 import { PwaSetup } from "@/components/pwa/pwa-setup";
 import { RouteProgress } from "@/components/shell/route-progress";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import "./globals.css";
+
+// Applies the saved dark preference before first paint (only inside /app), so
+// the app never flashes light on load. Kept in sync with ThemeProvider.
+const themeBootScript = `(function(){try{var t=localStorage.getItem("stackceipt-theme");if(t==="dark"&&location.pathname.indexOf("/app")===0){document.documentElement.classList.add("dark")}}catch(e){}})();`;
 
 export const metadata: Metadata = {
   title: {
@@ -43,9 +49,14 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <head>
+        <Script id="theme-boot" strategy="beforeInteractive">
+          {themeBootScript}
+        </Script>
+      </head>
       <body>
         <RouteProgress />
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
         <ChatBot />
         <PwaSetup />
         <Toaster />
