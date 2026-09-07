@@ -185,7 +185,7 @@ function SidebarContent({
     <div className="flex h-full flex-col">
       <div className="flex h-14 items-center border-b border-sidebar-border px-4">
         <Link href={base} className="flex items-center" onClick={onNavigate} aria-label="Stackceipt home">
-          <Wordmark height={40} />
+          <Wordmark height={40} className="dark:brightness-0 dark:invert" />
         </Link>
       </div>
 

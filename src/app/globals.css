@@ -2,6 +2,13 @@
 @import "tw-animate-css";
 
 /*
+  Dark mode is a manual class toggle (`.dark` on <html>, applied only inside
+  /app), not the OS setting — so bind the `dark:` variant to that class instead
+  of Tailwind's default prefers-color-scheme media query.
+*/
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
   Stackceipt design system.
   Translated from the /shadcn-ui skill: "clinical blueprint on frosted paper".
   Monochromatic, warm-gray surface stack, hairline borders, whisper-quiet elevation.
