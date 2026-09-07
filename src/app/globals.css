@@ -133,6 +133,28 @@
   --info-border: #2a2a2f;
 }
 
+/*
+  Smooth cross-fade of theme colors on a deliberate light/dark switch. The
+  `theme-transition` class is added to <html> only for the ~300ms of the toggle
+  (see ThemeProvider), so it never animates the initial load or route changes.
+  Scoped to no-preference so reduced-motion users get an instant swap.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  .theme-transition,
+  .theme-transition *,
+  .theme-transition *::before,
+  .theme-transition *::after {
+    transition:
+      background-color 300ms ease,
+      border-color 300ms ease,
+      color 300ms ease,
+      fill 300ms ease,
+      stroke 300ms ease,
+      filter 300ms ease !important;
+    transition-delay: 0s !important;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

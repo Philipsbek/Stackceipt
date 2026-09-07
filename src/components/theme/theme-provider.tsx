@@ -47,7 +47,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     else root.classList.remove("dark");
   }, [theme, inApp]);
 
+  const transitionTimer = React.useRef<number | undefined>(undefined);
+  React.useEffect(() => () => window.clearTimeout(transitionTimer.current), []);
+
   const setTheme = React.useCallback((next: Theme) => {
+    // Briefly enable a color cross-fade — only for this deliberate switch, so the
+    // initial load and route changes stay instant.
+    const root = document.documentElement;
+    root.classList.add("theme-transition");
+    window.clearTimeout(transitionTimer.current);
+    transitionTimer.current = window.setTimeout(
+      () => root.classList.remove("theme-transition"),
+      320,
+    );
+
     setThemeState(next);
     try {
       window.localStorage.setItem(THEME_STORAGE_KEY, next);
