@@ -19,11 +19,20 @@ function ProductIcon({ product, className }: { product: ProductCatalogItem; clas
       </span>
     );
   }
+  const darkBrand = isDarkHex(product.icon.hex);
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={cn("size-5", className)} style={{ color: `#${product.icon.hex}` }}>
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={cn("size-5", darkBrand && "dark:invert", className)} style={{ color: `#${product.icon.hex}` }}>
       <path fill="currentColor" d={product.icon.path} />
     </svg>
   );
+}
+
+function isDarkHex(hex: string): boolean {
+  const value = hex.replace("#", "");
+  const red = Number.parseInt(value.slice(0, 2), 16);
+  const green = Number.parseInt(value.slice(2, 4), 16);
+  const blue = Number.parseInt(value.slice(4, 6), 16);
+  return red * 0.299 + green * 0.587 + blue * 0.114 < 70;
 }
 
 export function ProductCombobox({ value, onSelect, onCustom }: Props) {
@@ -77,7 +86,7 @@ export function ProductCombobox({ value, onSelect, onCustom }: Props) {
     <div ref={rootRef} className="relative">
       <button type="button" className="flex h-9 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((current) => !current)}>
         <span className="flex min-w-0 items-center gap-2">
-          {selected ? <ProductIcon product={selected} className="shrink-0" /> : value ? <span className="flex size-5 shrink-0 items-center justify-center rounded-sm bg-secondary text-[10px] font-semibold">{value.slice(0, 1).toUpperCase()}</span> : null}
+          {selected ? <span className="flex size-7 shrink-0 items-center justify-center rounded-md dark:bg-white/10"><ProductIcon product={selected} /></span> : value ? <span className="flex size-5 shrink-0 items-center justify-center rounded-sm bg-secondary text-[10px] font-semibold">{value.slice(0, 1).toUpperCase()}</span> : null}
           <span className={cn("truncate", !value && "text-muted-foreground")}>{value || "Select or add a product"}</span>
         </span>
         <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
@@ -92,7 +101,7 @@ export function ProductCombobox({ value, onSelect, onCustom }: Props) {
           <div role="listbox" className="max-h-72 overflow-y-auto p-1.5">
             {results.map((product) => (
               <button key={product.id} type="button" role="option" aria-selected={selected?.id === product.id} onClick={() => choose(product)} className="flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left hover:bg-secondary focus-visible:bg-secondary focus-visible:outline-none">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-card"><ProductIcon product={product} /></span>
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-card dark:border-white/15 dark:bg-white/10"><ProductIcon product={product} /></span>
                 <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{product.name}</span><span className="block truncate text-xs text-muted-foreground">{product.vendor} · {product.category}</span></span>
                 {selected?.id === product.id ? <Check className="size-4" /> : null}
               </button>
